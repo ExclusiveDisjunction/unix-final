@@ -3,6 +3,8 @@ use std::fmt::Display;
 
 use sea_query::*;
 
+use std::sync::Arc;
+
 use crate::book::BookRating;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -175,4 +177,22 @@ pub fn get_all_raw_authors(conn: &mut postgres::Client) -> Result<Vec<RawAuthor>
     }
 
     Ok( return_result )
+}
+
+pub fn parse_raw<T, V>(values: Vec<T>) -> (Vec<V>, Vec<<T as TryInto<V>>::Error>) where T: TryInto<V> {
+    let mut result = vec![];
+    let mut errors = vec![];
+
+    for value in values {
+        match value.try_into() {
+            Ok(user) => result.push(user),
+            Err(e) => errors.push(e)
+        }
+    }
+
+    (result, errors)
+}
+
+pub fn arc_wrap<T>(vals: Vec<T>) -> Vec<Arc<T>> {
+    vals.into_iter().map(Arc::new).collect()
 }
