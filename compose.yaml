@@ -19,7 +19,12 @@ services:
         protocol: tcp
         mode: ingress
     deploy:
-      replicas: 2
+      replicas: 6
+      update_config:
+        parallelism: 2
+        delay: 10s
+      labels:
+        app: front-app
     depends_on:
       - db
        # condition: service_healthy
