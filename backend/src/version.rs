@@ -85,6 +85,9 @@ impl Version {
     }
 }
 
+pub const CUR_VERSION: Version = V_0_1_0;
+pub const V_0_1_0: Version = Version::new(0, 1, 0);
+
 #[test]
 pub fn test_version_functions() {
     let v1 = Version::new(1, 0, 0);
