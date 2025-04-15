@@ -16,7 +16,10 @@ services:
     ports:
       - target: 3000
         published: 80
-        replicas: 2
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 2
     depends_on:
       db:
         condition: service_healthy
