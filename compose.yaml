@@ -14,7 +14,7 @@ services:
     environment:
       NODE_ENV: production
     ports:
-        target: 3000
+      - target: 3000
         published: 80
         replicas: 2
     depends_on:
