@@ -19,7 +19,7 @@ services:
         protocol: tcp
         mode: ingress
     deploy:
-      replicas: 6
+      replicas: 3
       update_config:
         parallelism: 2
         delay: 10s
@@ -34,6 +34,13 @@ services:
     image: back
     ports:
       - 5432:5432
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      labels:
+        app: back-app
     depends_on:
       - db
         #condition: service_healthy
