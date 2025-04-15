@@ -13,13 +13,10 @@ services:
       context: frontend
     environment:
       NODE_ENV: production
-    deploy:
-      mode: global
     ports:
-      - target: 3000
+        target: 3000
         published: 80
-        protocol: tcp
-        mode: host
+        replicas: 2
     depends_on:
       db:
         condition: service_healthy
