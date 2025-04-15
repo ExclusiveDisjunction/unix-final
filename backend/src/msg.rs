@@ -294,7 +294,6 @@ pub fn decode_response<T, S>(soc: &mut S) -> Result<T, DecodeError> where T: Res
     decode_message(soc)
 }
 
-#[cfg(feature="async")]
 pub mod msg_async {
     use super::*;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -328,5 +327,4 @@ pub mod msg_async {
     }
 }
 
-#[cfg(feature="async")]
 pub use msg_async::*;
