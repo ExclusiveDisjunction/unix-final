@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd /home/connorkuziemko2021/unix-final || exit
+USER_HOME=$(eval echo "~$USER")
+cd "$USER_HOME/unix-final" || exit
 
 
 #if not using a github repo to manage the frontend, backend, and db comment out the next line, otherwise update with your github repo and branch
