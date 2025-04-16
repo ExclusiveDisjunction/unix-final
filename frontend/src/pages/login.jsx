@@ -1,5 +1,5 @@
 import react, {useState} from 'react';
-//import '.../css/login.css;
+import '../css/login.css';
 
 const GoogleFontsStyle = `
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap');
@@ -38,10 +38,10 @@ export const Login = () => {
 
     return(
         <div className ='wrap'>
-            <div className= {'login-box space-mono-bold'}>
+            <div className= {'login-form-box space-mono-bold'}>
                 <h3>Login</h3>
                 <form onSubmit= {handleFormSubmmit}>
-                    <div className= "input=box">
+                    <div className= "input-box">
                         <span className="icon"><ion-icon name="perosn"></ion-icon></span>
                         <input 
                             type='text'
@@ -52,7 +52,7 @@ export const Login = () => {
                         />
                         <label>Username</label>
                     </div>
-                    <div className= "input=box">
+                    <div className= "input-box">
                         <span className="icon"><ion-icon name="lock-closed"></ion-icon></span>
                         <input 
                             type='password' 
