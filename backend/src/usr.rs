@@ -3,7 +3,7 @@ use std::{fmt::{Debug, Display}, hash::Hash, ops::Deref, str::FromStr};
 use serde::{Serialize, Deserialize};
 use sea_query::*;
 
-use crate::{auth::JWT, msg::{MessageBasis, RequestMessage, ResponseMessage}};
+use crate::{auth::JWT, db::DatabaseCallable, msg::{MessageBasis, RequestMessage, ResponseMessage}};
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Username {
@@ -53,13 +53,13 @@ impl Deref for Username {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Eq, Hash)]
 #[enum_def]
 pub struct RawUser {
-    username: String,
-    first_name: String,
-    last_name: String,
-    password: String
+    pub username: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub password: String
 }
 impl TryFrom<RawUser> for User {
     type Error = bcrypt::BcryptError;
@@ -82,6 +82,56 @@ impl From<User> for RawUser {
             last_name: value.last_name,
             password: value.hash_parts.to_string()
         }
+    }
+}
+impl DatabaseCallable for RawUser {
+    type Identity = RawUserIden;
+    fn all_columns() -> &'static [Self::Identity] {
+        &[
+            RawUserIden::Username,
+            RawUserIden::FirstName,
+            RawUserIden::LastName,
+            RawUserIden::Password
+        ]
+    }
+    fn table() -> Self::Identity {
+        RawUserIden::Table
+    }
+    fn parse(row: postgres::Row) -> Self {
+        let username: &str = row.get(0);
+        let first_name: &str = row.get(1);
+        let last_name: &str = row.get(2);
+        let password: &str = row.get(3);
+
+        Self {
+            username: username.to_string(),
+            first_name: first_name.to_string(),
+            last_name: last_name.to_string(),
+            password: password.to_string()
+        }
+    }
+    fn create_columns(build: &mut TableCreateStatement) {
+        build
+            .col(
+                ColumnDef::new(RawUserIden::Username)
+                    .text()
+                    .primary_key()
+            )
+            .col(
+                ColumnDef::new(RawUserIden::FirstName)
+                    .text()
+                    .not_null()
+            )
+            .col(
+                ColumnDef::new(RawUserIden::LastName)
+                    .text()
+                    .not_null()
+            )
+            .col(
+                ColumnDef::new(RawUserIden::Password)
+                    .text()
+                    .not_null()
+            );
     }
 }
 impl RawUser {
@@ -146,47 +196,12 @@ impl User {
     }
 }
 
-pub fn get_all_raw_users(conn: &mut postgres::Client) -> Result<Vec<RawUser>, postgres::Error> {
-    let query = Query::select()
-        .column(RawUserIden::Username)
-        .column(RawUserIden::FirstName)
-        .column(RawUserIden::LastName)
-        .column(RawUserIden::Password)
-        .from(RawUserIden::Table)
-        .build(PostgresQueryBuilder);
-
-    let result = conn.query(&query.0, &[])?;
-    let mut return_result = vec![];
-    for row in result {
-        let username: &str = row.get(0);
-        let first_name: &str = row.get(1);
-        let last_name: &str = row.get(2);
-        let password: &str = row.get(3);
-
-        return_result.push(
-            RawUser::new(
-                username.to_string(), 
-                first_name.to_string(), 
-                last_name.to_string(), 
-                password.to_string()
-            )
-        )
-    }
-
-    Ok( return_result )
-}
-pub fn parse_all_users(values: Vec<RawUser>) -> (Vec<User>, Vec<<User as TryFrom<RawUser>>::Error>) {
-    let mut result = vec![];
-    let mut errors = vec![];
-
-    for value in values {
-        match value.try_into() {
-            Ok(user) => result.push(user),
-            Err(e) => errors.push(e)
-        }
-    }
-
-    (result, errors)
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize, Hash)]
+pub struct NetworkUser {
+    jwt: String,
+    username: String,
+    first_name: String,
+    last_name: String
 }
 
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]

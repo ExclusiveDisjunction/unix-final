@@ -11,6 +11,7 @@ pub mod usr;
 pub mod auth;
 pub mod book;
 pub mod book_org;
+pub mod db;
 
 use log::{LoggerLevel, LoggerRedirect, LOG};
 use loc::{make_log_path, PROG_NAME};
@@ -37,9 +38,23 @@ enum Commands {
     Run
 }
 
+pub async fn validate() -> Result<(), ExitCode> {
+    todo!() 
+}
+pub async fn info() -> Result<(), ExitCode> {
+    validate().await?;
+
+    Ok( () )
+}
+pub async fn run() -> Result<(), ExitCode> {
+    validate().await?;
+
+    Ok( () )
+}
+
 #[tokio::main]
 async fn main() -> Result<(), ExitCode> {
-    let mut command = Arguments::parse();
+    let command = Arguments::parse();
 
     let log_path = make_log_path();
     let level: LoggerLevel;
@@ -57,14 +72,16 @@ async fn main() -> Result<(), ExitCode> {
         level = LoggerLevel::Info;
         redirect = LoggerRedirect::new(Some(LoggerLevel::Info), !command.no_error);
     }
-
-    if command.command.is_none() {
-        command.command = Some(Commands::Run)
-    }
     
     if let Err(e) = LOG.open(log_path, level, redirect) {
         eprintln!("Unable to open log '{e}'.");
         return Err(ExitCode::FAILURE);
+    }
+
+    match command.command {
+        None | Some(Commands::Run) => run().await?,
+        Some(Commands::Info) => info().await?,
+        Some(Commands::Validate) => validate().await?
     }
 
     log_info!("Starting up {}, Version {}", PROG_NAME, CUR_VERSION);
