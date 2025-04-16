@@ -1,23 +1,15 @@
 use std::process::ExitCode;
 
-pub mod error;
-pub mod lock;
-pub mod log;
-pub mod msg;
-pub mod net;
-pub mod version;
-pub mod loc;
-pub mod usr;
+pub mod io;
 pub mod auth;
-pub mod book;
-pub mod book_org;
-pub mod db;
+pub mod tool;
+pub mod loc;
 
-use log::{LoggerLevel, LoggerRedirect, LOG};
+use tool::log::{LoggerLevel, LoggerRedirect, LOG};
 use loc::{make_log_path, PROG_NAME};
 
 use clap::{Subcommand, Parser};
-use version::CUR_VERSION;
+use tool::version::CUR_VERSION;
 
 #[derive(Parser, Debug)]
 struct Arguments {
@@ -39,15 +31,23 @@ enum Commands {
 }
 
 pub async fn validate() -> Result<(), ExitCode> {
-    todo!() 
+    Ok( () )
 }
 pub async fn info() -> Result<(), ExitCode> {
     validate().await?;
 
-    Ok( () )
+    todo!("Still in progess");
+
+    //Ok( () )
 }
 pub async fn run() -> Result<(), ExitCode> {
     validate().await?;
+
+    let mut signal = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt()).unwrap();
+    println!("Starting to wait...");
+    let _ = signal.recv().await;
+
+    println!("Kill signal received. Stopping.");
 
     Ok( () )
 }
@@ -78,13 +78,13 @@ async fn main() -> Result<(), ExitCode> {
         return Err(ExitCode::FAILURE);
     }
 
+    log_info!("Starting up {}, Version {}", PROG_NAME, CUR_VERSION);
+
     match command.command {
         None | Some(Commands::Run) => run().await?,
         Some(Commands::Info) => info().await?,
         Some(Commands::Validate) => validate().await?
     }
-
-    log_info!("Starting up {}, Version {}", PROG_NAME, CUR_VERSION);
 
     log_info!("All tasks completed successfully. Goodbye");
     Ok( () )

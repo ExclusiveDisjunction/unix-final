@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 
 use sea_query::*;
 
-use crate::db::DatabaseCallable;
+use super::db::DatabaseCallable;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Clone, Debug)]
 #[enum_def]

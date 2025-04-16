@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, fmt::{Debug, Display}, str::FromStr};
 use serde::{Serialize, Deserialize};
-use crate::error::FormattingError;
+use super::error::FormattingError;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct Version {
