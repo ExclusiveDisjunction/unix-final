@@ -7,27 +7,43 @@
 # You can add other services your application may depend on here, such as a
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
+version: '3.9'
 services:
   frontend:
-    build:
-      context: frontend
+    image: front
     environment:
       NODE_ENV: production
     ports:
-      - 80:3000
+      - target: 3000
+        published: 80
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      labels:
+        app: front-app
     depends_on:
-      db:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
+      - db
+       # condition: service_healthy
+      - backend
+   #     condition: service_healthy
   backend:
-    build:
-      context: backend
+    image: back
     ports:
       - 5432:5432
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      labels:
+        app: back-app
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+        #condition: service_healthy
     healthcheck:
       test: ["CMD", "sh"]
       interval: 10s
@@ -90,4 +106,3 @@ secrets:
 # secrets:
 #   db-password:
 #     file: db/password.txt
-
