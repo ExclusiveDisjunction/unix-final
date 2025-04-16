@@ -2,12 +2,12 @@ use std::{collections::HashMap, sync::{Arc, RwLock}};
 
 use serde::{de, de::Visitor, ser::SerializeStruct, Deserialize, Serialize};
 use sea_query::*;
-
-use crate::{book_org::{AuthorIden, BookGroupIden, GenreIden}, db::{arc_wrap, get_from_db, DatabaseCallable}, usr::{RawUser, RawUserIden}};
-use crate::lock::{RwProvider, OptionRwProvider};
 use lazy_static::lazy_static;
 
-use super::book_org::{Author, BookGroup, Genre};
+use super::book_org::{Author, AuthorIden, BookGroup, BookGroupIden, Genre, GenreIden};
+use super::usr::{RawUser, RawUserIden};
+use super::db::{arc_wrap, get_from_db, DatabaseCallable};
+use crate::tool::lock::{RwProvider, OptionRwProvider, ProtectedAccess};
 
 #[derive(Deserialize, Iden, Clone, Copy, Debug, PartialEq, Eq)]
 #[serde(rename_all="lowercase")]
@@ -608,8 +608,8 @@ impl Default for ContextProvider {
 }
 impl RwProvider for ContextProvider {
     type Data = Option<ActiveContext>;
-    fn access_raw(&self) -> crate::lock::ProtectedAccess<'_, Arc<RwLock<Self::Data>>> {
-        crate::lock::ProtectedAccess::new(&self.data)
+    fn access_raw(&self) -> ProtectedAccess<'_, Arc<RwLock<Self::Data>>> {
+        ProtectedAccess::new(&self.data)
     }
 }
 impl OptionRwProvider<ActiveContext> for ContextProvider { }

@@ -2,9 +2,9 @@ use std::{collections::{HashMap, HashSet}, fmt::Display, hash::Hash, ops::Deref,
 use serde::{Serialize, Deserialize};
 use lazy_static::lazy_static;
 
-use crate::lock::{MutexProvider, MutexProviderAccess};
+use crate::tool::lock::{MutexProvider, MutexProviderAccess, ProtectedAccess};
 
-use super::usr::{User, Username};
+use crate::io::usr::{User, Username};
 
 #[derive(PartialEq, Eq, Clone, Debug, Serialize, Deserialize)]
 pub struct JWT {
@@ -211,8 +211,8 @@ impl Default for SessionProvider {
 }
 impl MutexProvider for SessionProvider {
     type Data = UserSessions;
-    fn access_raw(&self) -> crate::lock::ProtectedAccess<'_, Arc<Mutex<Self::Data>>> {
-        crate::lock::ProtectedAccess::new(&self.data)
+    fn access_raw(&self) -> ProtectedAccess<'_, Arc<Mutex<Self::Data>>> {
+        ProtectedAccess::new(&self.data)
     }
 }
 impl MutexProviderAccess for SessionProvider { }

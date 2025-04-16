@@ -3,7 +3,9 @@ use std::{fmt::{Debug, Display}, hash::Hash, ops::Deref, str::FromStr};
 use serde::{Serialize, Deserialize};
 use sea_query::*;
 
-use crate::{auth::JWT, db::DatabaseCallable, msg::{MessageBasis, RequestMessage, ResponseMessage}};
+use crate::auth::JWT;
+use super::db::DatabaseCallable;
+use super::msg::{MessageBasis, RequestMessage, ResponseMessage};
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Username {
