@@ -31,7 +31,7 @@ fi
 
 echo "Do you want deploy-swarm added through cron {every 10 minutes} (y/n)"
 read -r ADD_CRON
-if [[ "$ADD_CRON" == "y" ]]; then
+if [ "$ADD_CRON" == "y" ]; then
   echo "🛠 Adding cron job as root..."
   # Safely append to root's crontab without duplicating
   (sudo crontab -l 2>/dev/null | grep -v "$SCRIPT"; echo "*/10 * * * * $(pwd)/$SCRIPT >> $(pwd)/deploy-swarm.log 2>&1") | sudo crontab -
