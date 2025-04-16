@@ -1,6 +1,10 @@
 import react, {useState} from 'react';
 //import '.../css/login.css;
 
+const GoogleFontsStyle = `
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap');
+`;
+
 export const Login = () => {
     const [formData, setFormData] = useState({
         username: '',
@@ -32,8 +36,22 @@ export const Login = () => {
 
     };
 
+    return(
+        <div className ='wrap'>
+            <div className= {'login-box space-mono-bold'}>
+                <h3>Login</h3>
+                <form onSubmit= {HnadleFormSubmmit}>
+                    <div></div>
+                </form>
+            </div>
+        </div>
+    )
+
 
 };
+
+
+
 
 
 
