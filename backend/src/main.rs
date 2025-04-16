@@ -12,6 +12,7 @@ use io::{book::Book, db::create_table_for};
 use tokio_postgres::{Client, connect, NoTls};
 use tool::log::{LoggerLevel, LoggerRedirect, LOG};
 use loc::{make_log_path, PROG_NAME};
+use io::book::{get_all_db_data, activate_context};
 
 use clap::{Subcommand, Parser};
 use tool::version::CUR_VERSION;
@@ -34,22 +35,32 @@ struct Arguments {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
+    /// Ensures that the database is operational
     Validate,
+    /// Validates the database, and displays how many objects are stored in it.
     Info,
-    Run
+    /// Validates the database, and runs the app to begin serving requests.
+    Run,
+    /// Displays the app's current version
+    Version
 }
 
 pub async fn create_tables(conn: &mut tokio_postgres::Client) -> Result<(), postgres::Error> {
+    log_info!("Running create scripts");
+    log_debug!("Loading Book, RawUser, Genre, BookGroup, Author");
     create_table_for::<Book>        (conn).await?;
     create_table_for::<RawUser>     (conn).await?;
     create_table_for::<Genre>       (conn).await?;  
     create_table_for::<BookGroup>   (conn).await?;
     create_table_for::<Author>      (conn).await?;
 
+    log_debug!("Loading GenreGroup, BookOwner, GroupBinding, AuthorGroup");
     create_table_for::<GenreGroup>  (conn).await?;
     create_table_for::<BookOwner>   (conn).await?;
     create_table_for::<GroupBinding>(conn).await?;
     create_table_for::<AuthorGroup> (conn).await?;
+
+    log_info!("Create successful.");
 
     Ok( () )
 }
@@ -65,9 +76,23 @@ pub async fn validate(conn: &mut Client) -> Result<(), ExitCode> {
 pub async fn info(conn: &mut Client) -> Result<(), ExitCode> {
     validate(conn).await?;
 
-    todo!("Still in progess");
+    let loaded_context = match get_all_db_data(conn).await {
+        Ok(v) => v,
+        Err(e) => {
+            log_error!("Unable to open context '{e}'");
+            return Err(ExitCode::FAILURE);
+        }
+    };
 
-    //Ok( () )
+    let active = activate_context(loaded_context);
+    println!("Database objects:");
+    println!("\t  Books  {}", active.books  .len());
+    println!("\t  Users  {}", active.users  .len());
+    println!("\t Groups  {}", active.groups .len());
+    println!("\t Genres  {}", active.genres .len());
+    println!("\tAuthors  {}", active.authors.len());
+
+    Ok( () )
 }
 pub async fn run(conn: &mut Client) -> Result<(), ExitCode> {
     validate(conn).await?;
@@ -137,7 +162,10 @@ pub async fn main() -> Result<(), ExitCode> {
     match command.command {
         None | Some(Commands::Run) => run(&mut client).await?,
         Some(Commands::Info) => info(&mut client).await?,
-        Some(Commands::Validate) => validate(&mut client).await?
+        Some(Commands::Validate) => validate(&mut client).await?,
+        Some(Commands::Version) => {
+            println!("{}, Version {}", PROG_NAME, CUR_VERSION);
+        }
     }
 
     log_info!("All tasks completed successfully. Goodbye");
