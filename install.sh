@@ -1,4 +1,5 @@
 #!/bin/sh
+cd "$(dirname "$0")" || exit 1
 
 if ! command -v "npm" 2>&1 >/dev/null; then
   npm install -y
@@ -35,8 +36,9 @@ echo "Do you want deploy-swarm added through cron {every 10 minutes} (y/n)"
 read -r ADD_CRON
 if [ "$ADD_CRON" = "y" ]; then
   echo "🛠 Adding cron job as root..."
-  # Safely append to root's crontab without duplicating
-  (sudo crontab -l 2>/dev/null | grep -v "$SCRIPT"; echo "*/10 * * * * $(pwd)/$SCRIPT >> $(pwd)/deploy-swarm.log 2>&1") | sudo crontab -
+  SCRIPT_PATH="$(realpath "$SCRIPT")"
+  LOG_PATH="$(dirname "$SCRIPT_PATH")/deploy-swarm.log"
+  (sudo crontab -l 2>/dev/null | grep -v "$SCRIPT_PATH"; echo "*/10 * * * * $SCRIPT_PATH >> $LOG_PATH 2>&1") | sudo crontab -
   echo "Cron job added to root: runs every 10 minutes"
 else
   echo "Skipping cron setup."
