@@ -296,15 +296,15 @@ impl DatabaseCallable for GenreGroup {
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(GenreIden::Table, GenreIden::Name)
-                    .to(GenreGroupIden::Table, GenreGroupIden::GenreName)
+                    .from_col(GenreGroupIden::GenreName)
+                    .to(GenreIden::Table, GenreIden::Name)
                     .on_delete(ForeignKeyAction::Cascade)
                     .on_update(ForeignKeyAction::Cascade)
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(BookIden::Table, BookIden::Id)
-                    .to(GenreGroupIden::Table, GenreGroupIden::BookId)
+                    .to(BookIden::Table, BookIden::Id)
+                    .from_col(GenreGroupIden::BookId)
                     .on_delete(ForeignKeyAction::Cascade)
                     .on_update(ForeignKeyAction::Cascade)
             );
@@ -356,12 +356,12 @@ impl DatabaseCallable for GroupBinding {
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(BookGroupIden::Table, BookGroupIden::Name)
+                    .to(BookGroupIden::Table, BookGroupIden::Name)
                     .from(GroupBindingIden::Table, GroupBindingIden::GroupName)
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(BookIden::Table, BookIden::Id)
+                    .to(BookIden::Table, BookIden::Id)
                     .from(GroupBindingIden::Table, GroupBindingIden::BookId)
             );
     }
@@ -412,13 +412,13 @@ impl DatabaseCallable for AuthorGroup {
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(AuthorIden::Table, AuthorIden::Id)
-                    .to(Self::Identity::Table, Self::Identity::AuthorId)
+                    .to(AuthorIden::Table, AuthorIden::Id)
+                    .from(Self::Identity::Table, Self::Identity::AuthorId)
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(BookIden::Table, BookIden::Id)
-                    .to(Self::Identity::Table, Self::Identity::BookId)
+                    .to(BookIden::Table, BookIden::Id)
+                    .from(Self::Identity::Table, Self::Identity::BookId)
             );
     }
 }
@@ -468,13 +468,13 @@ impl DatabaseCallable for BookOwner {
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(RawUserIden::Table, RawUserIden::Username)
-                    .to(Self::Identity::Table, Self::Identity::Username)
+                    .to(RawUserIden::Table, RawUserIden::Username)
+                    .from(Self::Identity::Table, Self::Identity::Username)
             )
             .foreign_key(
                 ForeignKeyCreateStatement::new()
-                    .from(BookIden::Table, BookIden::Id)
-                    .to(Self::Identity::Table, Self::Identity::BookId)
+                    .to(BookIden::Table, BookIden::Id)
+                    .from(Self::Identity::Table, Self::Identity::BookId)
             );
     }
 }
@@ -504,16 +504,16 @@ impl ActiveContext {
     }
 }
 
-pub fn get_all_db_data(conn: &mut postgres::Client) -> Result<LoadedContext, postgres::Error> {
-    let books:   Vec<Book>      = get_from_db(conn)?;
-    let groups:  Vec<BookGroup> = get_from_db(conn)?;
-    let genres:  Vec<Genre>     = get_from_db(conn)?;
-    let authors: Vec<Author>    = get_from_db(conn)?;
-    let users:   Vec<RawUser>   = get_from_db(conn)?;
+pub async fn get_all_db_data(conn: &mut tokio_postgres::Client) -> Result<LoadedContext, postgres::Error> {
+    let books:   Vec<Book>      = get_from_db(conn).await?;
+    let groups:  Vec<BookGroup> = get_from_db(conn).await?;
+    let genres:  Vec<Genre>     = get_from_db(conn).await?;
+    let authors: Vec<Author>    = get_from_db(conn).await?;
+    let users:   Vec<RawUser>   = get_from_db(conn).await?;
 
-    let genre_groups:   Vec<GenreGroup>   = get_from_db(conn)?;
-    let author_groups:  Vec<AuthorGroup>  = get_from_db(conn)?;
-    let group_bindings: Vec<GroupBinding> = get_from_db(conn)?;
+    let genre_groups:   Vec<GenreGroup>   = get_from_db(conn).await?;
+    let author_groups:  Vec<AuthorGroup>  = get_from_db(conn).await?;
+    let group_bindings: Vec<GroupBinding> = get_from_db(conn).await?;
     //let book_owners:    Vec<BookOwner>    = get_from_db(conn)?;
 
     Ok(

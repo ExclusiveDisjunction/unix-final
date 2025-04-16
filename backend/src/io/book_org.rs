@@ -34,6 +34,7 @@ impl DatabaseCallable for BookGroup {
         build
             .col(
                 ColumnDef::new(BookGroupIden::Name)
+                    .text()
                     .not_null()
                     .primary_key()
                 )
