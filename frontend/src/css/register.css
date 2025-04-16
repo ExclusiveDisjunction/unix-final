@@ -3,7 +3,7 @@ body{
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-image: url(/assets/AdobeStock_720636577.jpeg);
+    background-image: url(../assets/AdobeStock_720636577.jpeg);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;

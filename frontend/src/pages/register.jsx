@@ -28,16 +28,14 @@ export const Register = () => {
         setMessage('Registering...');
 
         setTimeout(() => {
-            // Mock validation
             if (formData.username === '' || formData.email === '' || formData.password === '' || formData.confirmPassword === '') {
                 setMessage('All fields are required.');
             } else if (formData.password !== formData.confirmPassword) {
                 setMessage('Passwords do not match.');
             } else {
-                // Simulate successful registration
                 setMessage('Registration successful! You can now log in.');
             }
-        }, 1000); // 1 second delay to mimic async request
+        }, 1000); 
     };
 
     return (
@@ -82,7 +80,7 @@ export const Register = () => {
                     <button type="submit" className="bttn-register space-mono-bold">Register</button>
                     <div className="account-login">
                         <p>Already have an account?</p>
-                        <a href="/login">Login</a>
+                        <a href="#login">Login</a>
                     </div>
                     <div id="info">{message}</div>
                 </form>

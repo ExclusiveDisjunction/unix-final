@@ -41,6 +41,7 @@ export const Login = ({onLogin}) => {
 
     return(
         <div className ='wrap'>
+        <style>{GoogleFontsStyle}</style>
             <div className= {'login-form-box space-mono-bold'}>
                 <h3>Login</h3>
                 <form onSubmit= {handleFormSubmmit}>
@@ -68,7 +69,7 @@ export const Login = ({onLogin}) => {
                     </div>
                     <button type='submit' className='bttn space-mono-bold'>Login</button>
                     <div className= 'account-register'>
-                        <a href='/register'>Dont have an account? Register</a>
+                        <a href='#register'>Dont have an account? Register</a>
                     </div>
                     <div id="info"></div>
                 </form>
