@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use lazy_static::lazy_static;
 use serde::{Serialize, Deserialize};
 
-use crate::error::{IOError, OperationError};
-use crate::lock::{MutexProvider, OptionMutexProvider, ProtectedAccess};
+use super::error::{IOError, OperationError};
+use super::lock::{MutexProvider, OptionMutexProvider, ProtectedAccess};
 
 /// Determines the level used by the logger
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Serialize, Deserialize)]
@@ -278,9 +278,8 @@ pub fn log_global(level: LoggerLevel, contents: String) {
     }
 
     let mut lock = LOG.access();
-    match lock.access_mut() {
-        Some(v) => log_direct(v, level, contents),
-        None => return
+    if let Some(v) = lock.access_mut() {
+        log_direct(v, level, contents)
     }
 }
 pub fn log_direct(logger: &mut LoadedLogger, level: LoggerLevel, contents: String) {
@@ -297,12 +296,12 @@ macro_rules! collapse_level {
     ($level: expr) => {
         {
             #[allow(unreachable_patterns)]
-            let true_level: $crate::log::LoggerLevel = match $level {
-                $crate::log::LoggerLevel::Debug => $crate::log::LoggerLevel::Debug,
-                $crate::log::LoggerLevel::Info => $crate::log::LoggerLevel::Info,
-                $crate::log::LoggerLevel::Warning => $crate::log::LoggerLevel::Warning,
-                $crate::log::LoggerLevel::Error => $crate::log::LoggerLevel::Error,
-                $crate::log::LoggerLevel::Critical => $crate::log::LoggerLevel::Critical,
+            let true_level: $crate::tool::log::LoggerLevel = match $level {
+                $crate::tool::log::LoggerLevel::Debug    => $crate::tool::log::LoggerLevel::Debug,
+                $crate::tool::log::LoggerLevel::Info     => $crate::tool::log::LoggerLevel::Info,
+                $crate::tool::log::LoggerLevel::Warning  => $crate::tool::log::LoggerLevel::Warning,
+                $crate::tool::log::LoggerLevel::Error    => $crate::tool::log::LoggerLevel::Error,
+                $crate::tool::log::LoggerLevel::Critical => $crate::tool::log::LoggerLevel::Critical,
                 //_ => compile_error!("the type passed into this enum must be of LoggerLevel")
             };
 
@@ -322,7 +321,7 @@ macro_rules! logger_write {
             let level = $crate::collapse_level!($level);
             
             
-            $crate::log::log_global(level, contents);
+            $crate::tool::log::log_global(level, contents);
         }
     };
     ($log: expr, $level: expr, $($arg:tt)*) => {
@@ -330,7 +329,7 @@ macro_rules! logger_write {
             let contents: String = format!($($arg)*);
             let level = $crate::collapse_level!($level);
 
-            $crate::log::log_direct($log, level, contents);
+            $crate::tool::log::log_direct($log, level, contents);
         }
     };
 }
@@ -340,7 +339,7 @@ macro_rules! log_debug {
     ($($arg:tt)*) => {
         {
             use $crate::logger_write;
-            logger_write!($crate::log::LoggerLevel::Debug, $($arg)*)
+            logger_write!($crate::tool::log::LoggerLevel::Debug, $($arg)*)
         }
     };
     ($log: expr, $($arg:tt)*) => {
@@ -355,7 +354,7 @@ macro_rules! log_info {
     ($($arg:tt)*) => {
         {
             use $crate::logger_write;
-            logger_write!($crate::log::LoggerLevel::Info, $($arg)*)
+            logger_write!($crate::tool::log::LoggerLevel::Info, $($arg)*)
         }
     };
     ($log: expr, $($arg:tt)*) => {
@@ -370,7 +369,7 @@ macro_rules! log_warning {
     ($($arg:tt)*) => {
         {
             use $crate::logger_write;
-            logger_write!($crate::log::LoggerLevel::Warning, $($arg)*)
+            logger_write!($crate::tool::log::LoggerLevel::Warning, $($arg)*)
         }
     };
     ($log: expr, $($arg:tt)*) => {
@@ -385,7 +384,7 @@ macro_rules! log_error {
     ($($arg:tt)*) => {
         {
             use $crate::logger_write;
-            logger_write!($crate::log::LoggerLevel::Error, $($arg)*)
+            logger_write!($crate::tool::log::LoggerLevel::Error, $($arg)*)
         }
     };
     ($log: expr, $($arg:tt)*) => {
@@ -400,7 +399,7 @@ macro_rules! log_critical {
     ($($arg:tt)*) => {
         {
             use $crate::logger_write;
-            logger_write!($crate::log::LoggerLevel::Critical, $($arg)*)
+            logger_write!($crate::tool::log::LoggerLevel::Critical, $($arg)*)
         }
     };
     ($log: expr, $($arg:tt)*) => {
