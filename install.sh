@@ -8,7 +8,7 @@ chmod u+x deploy-swarm.sh
 
 USER_HOME=$(eval echo "~$USER")
 
-sudo git config --system --add safe.directory "$USER_Home/unix-final"
+sudo git config --system --add safe.directory "$USER_HOME/unix-final"
 
 npm install react-router-dom
 
