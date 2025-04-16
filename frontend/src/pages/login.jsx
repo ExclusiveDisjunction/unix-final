@@ -11,7 +11,7 @@ export const Login = () => {
         password: '',
     })
 
-    const [message, setMesage] = useState('');
+    const [message, setMessage] = useState('');
 
     const handleInputChange = (e) => {
         const {name, value} = e.target;
@@ -21,8 +21,8 @@ export const Login = () => {
         })) 
     };
 
-    const HnadleFormSubmmit= async(event) => {
-        event.preventDefualt();
+    const handleFormSubmmit= async(event) => {
+        event.preventDefault();
 
         setMessage('Signing in!');
 
@@ -30,7 +30,7 @@ export const Login = () => {
             if(formData.username === 'admin'&& formData.password === 'pass123'){
                 setMessage('Login successful!');
             } else {
-                setMesage('Invalid Login');  
+                setMessage('Invalid Login');  
             }
         }, 1000); // 1 second delay
 
@@ -40,7 +40,7 @@ export const Login = () => {
         <div className ='wrap'>
             <div className= {'login-box space-mono-bold'}>
                 <h3>Login</h3>
-                <form onSubmit= {HnadleFormSubmmit}>
+                <form onSubmit= {handleFormSubmmit}>
                     <div className= "input=box">
                         <span className="icon"><ion-icon name="perosn"></ion-icon></span>
                         <input 
