@@ -49,7 +49,7 @@ body{
     position: absolute;
     top: 50%;
     left: 5px;
-    transform: translateY(-50%);
+    transform: translateY(-90%);
     font-size: 0.5em;
     color: rgb(255, 255, 255);
     font-weight: 500;
@@ -59,7 +59,7 @@ body{
 
 .input-box-register input:focus~label,
 .input-bo-register input:valid~label{
-    top:-5px;
+    top:-1px;
 }
 
 .input-box-register input{

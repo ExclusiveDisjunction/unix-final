@@ -6,10 +6,10 @@ const GoogleFontsStyle = `
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap');
 `;
 
-export const Login = ({onLogin}) => {
+export const Login = ({ onLogin }) => {
     const [formData, setFormData] = useState({
-        username: '',
-        password: '',
+        username: 'admin',
+        password: 'pass123',
     })
 
     const [message, setMessage] = useState('');
@@ -30,8 +30,8 @@ export const Login = ({onLogin}) => {
         setTimeout(() => {
             if(formData.username === 'admin'&& formData.password === 'pass123'){
                 setMessage('Login successful!');
-                onLogin();
-                navigate('#')
+                if (onLogin) onLogin(); 
+                navigate('/');
             } else {
                 setMessage('Invalid Login');  
             }
