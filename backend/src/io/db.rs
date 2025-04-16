@@ -9,7 +9,7 @@ pub trait DatabaseCallable: Sized {
     fn table() -> Self::Identity;
     fn parse(row: postgres::Row) -> Self;
 }
-pub fn get_from_db<T>(conn: &mut postgres::Client) -> Result<Vec<T>, postgres::Error> where T: DatabaseCallable, T::Identity: Clone {
+pub async fn get_from_db<T>(conn: &mut tokio_postgres::Client) -> Result<Vec<T>, postgres::Error> where T: DatabaseCallable, T::Identity: Clone {
     let mut query = Query::select();
     for col in T::all_columns() {
         query.column(col.clone());
@@ -18,7 +18,7 @@ pub fn get_from_db<T>(conn: &mut postgres::Client) -> Result<Vec<T>, postgres::E
     query.from(T::table());
     let (query_string, _) = query.build(PostgresQueryBuilder);
 
-    let result = conn.query(&query_string, &[])?;
+    let result = conn.query(&query_string, &[]).await?;
     let mut return_result = vec![];
     for row in result {
         return_result.push(
@@ -42,7 +42,7 @@ pub fn parse_raw<T, V>(values: Vec<T>) -> (Vec<V>, Vec<<T as TryInto<V>>::Error>
     (result, errors)
 }
 
-pub fn create_table_for<T>(conn: &mut postgres::Client) -> Result<(), postgres::Error> where T: DatabaseCallable {
+pub async fn create_table_for<T>(conn: &mut tokio_postgres::Client) -> Result<(), postgres::Error> where T: DatabaseCallable {
     let mut table_base = Table::create();
     let statement_build = table_base
         .table(T::table())
@@ -52,7 +52,7 @@ pub fn create_table_for<T>(conn: &mut postgres::Client) -> Result<(), postgres::
 
     let statement = statement_build.build(PostgresQueryBuilder);
 
-    conn.execute(&statement, &[])?;
+    conn.execute(&statement, &[]).await?;
 
     Ok( () )
 }
