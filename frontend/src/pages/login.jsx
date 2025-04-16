@@ -41,7 +41,33 @@ export const Login = () => {
             <div className= {'login-box space-mono-bold'}>
                 <h3>Login</h3>
                 <form onSubmit= {HnadleFormSubmmit}>
-                    <div></div>
+                    <div className= "input=box">
+                        <span className="icon"><ion-icon name="perosn"></ion-icon></span>
+                        <input 
+                            type='text'
+                            name='username'
+                            value={formData.username} 
+                            onChange={handleInputChange} 
+                            required
+                        />
+                        <label>Username</label>
+                    </div>
+                    <div className= "input=box">
+                        <span className="icon"><ion-icon name="lock-closed"></ion-icon></span>
+                        <input 
+                            type='password' 
+                            name='password' 
+                            value={formData.password} 
+                            onChange={handleInputChange} 
+                            required
+                        />
+                        <label>Password</label>
+                    </div>
+                    <button type='submit' className='bttn space-mono-bold'>Login</button>
+                    <div className= 'account-register'>
+                        <a href='#'>Dont have an account? Register</a>
+                    </div>
+                    <div id="info"></div>
                 </form>
             </div>
         </div>
@@ -49,6 +75,8 @@ export const Login = () => {
 
 
 };
+
+export default Login;
 
 
 
