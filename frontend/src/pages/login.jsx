@@ -23,7 +23,7 @@ export const Login = ({ onLogin }) => {
         })) 
     };
 
-    const handleFormSubmmit= async(event) => {
+    const handleFormSubmit= async(event) => {
         event.preventDefault();
 
         setMessage('Signing in!');
@@ -44,7 +44,7 @@ export const Login = ({ onLogin }) => {
         <style>{GoogleFontsStyle}</style>
             <div className= {'login-form-box space-mono-bold'}>
                 <h3>Login</h3>
-                <form onSubmit= {handleFormSubmmit}>
+                <form onSubmit= {handleFormSubmit}>
                     <div className= "input-box">
                         <span className="icon"><ion-icon name="perosn"></ion-icon></span>
                         <input 
