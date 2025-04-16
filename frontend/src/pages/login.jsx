@@ -1,17 +1,19 @@
-import react, {useState} from 'react';
+import React, {useState} from 'react';
+import { Link, useNavigate } from 'react-router-dom'; 
 import '../css/login.css';
 
 const GoogleFontsStyle = `
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap');
 `;
 
-export const Login = () => {
+export const Login = ({onLogin}) => {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
     })
 
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleInputChange = (e) => {
         const {name, value} = e.target;
@@ -25,14 +27,15 @@ export const Login = () => {
         event.preventDefault();
 
         setMessage('Signing in!');
-
         setTimeout(() => {
             if(formData.username === 'admin'&& formData.password === 'pass123'){
                 setMessage('Login successful!');
+                onLogin();
+                navigate('#')
             } else {
                 setMessage('Invalid Login');  
             }
-        }, 1000); // 1 second delay
+        }, 1000);
 
     };
 
@@ -65,7 +68,7 @@ export const Login = () => {
                     </div>
                     <button type='submit' className='bttn space-mono-bold'>Login</button>
                     <div className= 'account-register'>
-                        <a href='#'>Dont have an account? Register</a>
+                        <a href='/register'>Dont have an account? Register</a>
                     </div>
                     <div id="info"></div>
                 </form>
