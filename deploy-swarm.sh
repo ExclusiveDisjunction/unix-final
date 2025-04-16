@@ -1,7 +1,6 @@
 #!/bin/bash
 
-USER_HOME=$(eval echo "~$USER")
-cd "$USER_HOME/unix-final" || exit
+cd "$(dirname "$0")" || exit 1
 
 
 #if not using a github repo to manage the frontend, backend, and db comment out the next line, otherwise update with your github repo and branch
