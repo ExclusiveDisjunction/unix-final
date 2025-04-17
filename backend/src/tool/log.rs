@@ -317,7 +317,7 @@ macro_rules! collapse_level {
 macro_rules! logger_write {
     ($level: expr, $($arg:tt)*) => {
         {
-            let contents: String = format!($($arg)*);
+            let contents: std::string::String = format!($($arg)*);
             let level = $crate::collapse_level!($level);
             
             
