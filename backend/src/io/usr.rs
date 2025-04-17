@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use sea_query::*;
 
 use crate::auth::JWT;
-use super::db::DatabaseCallable;
+use super::db::{DatabaseInsertable, DatabaseQueryable, DatabaseRepr, DatabaseTableCreatable, DatabaseUpdatable};
 use super::msg::{MessageBasis, RequestMessage, ResponseMessage};
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -57,36 +57,38 @@ impl Deref for Username {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Eq, Hash)]
 #[enum_def]
-pub struct RawUser {
+pub struct DbUser {
     pub username: String,
     pub first_name: String,
     pub last_name: String,
-    pub password: String
+    pub password: String,
+    is_new: bool
 }
-impl TryFrom<RawUser> for User {
+impl TryFrom<DbUser> for User {
     type Error = bcrypt::BcryptError;
-    fn try_from(value: RawUser) -> Result<Self, Self::Error> {
+    fn try_from(value: DbUser) -> Result<Self, Self::Error> {
         Ok(
             User {
                 username: value.username.into(),
                 first_name: value.first_name,
                 last_name: value.last_name,
-                hash_parts: value.password.parse()?
+                hash_parts: value.password.parse()?,
             }
         )
     }
 }
-impl From<User> for RawUser {
+impl From<User> for DbUser {
     fn from(value: User) -> Self {
         Self {
             username: value.username.val,
             first_name: value.first_name,
             last_name: value.last_name,
-            password: value.hash_parts.to_string()
+            password: value.hash_parts.to_string(),
+            is_new: false
         }
     }
 }
-impl DatabaseCallable for RawUser {
+impl DatabaseRepr for DbUser {
     type Identity = RawUserIden;
     fn all_columns() -> &'static [Self::Identity] {
         &[
@@ -99,6 +101,11 @@ impl DatabaseCallable for RawUser {
     fn table() -> Self::Identity {
         RawUserIden::Table
     }
+    fn is_new(&self) -> bool {
+        self.is_new
+    }   
+}
+impl DatabaseQueryable for DbUser {
     fn parse(row: postgres::Row) -> Self {
         let username: &str = row.get(0);
         let first_name: &str = row.get(1);
@@ -109,9 +116,12 @@ impl DatabaseCallable for RawUser {
             username: username.to_string(),
             first_name: first_name.to_string(),
             last_name: last_name.to_string(),
-            password: password.to_string()
+            password: password.to_string(),
+            is_new: false
         }
     }
+}
+impl DatabaseTableCreatable for DbUser {
     fn create_columns(build: &mut TableCreateStatement) {
         build
             .col(
@@ -136,13 +146,32 @@ impl DatabaseCallable for RawUser {
             );
     }
 }
-impl RawUser {
-    pub fn new(username: String, first_name: String, last_name: String, password: String) -> Self {
+impl DatabaseInsertable for DbUser {
+    fn insert_values(&self) -> Vec<sea_query::SimpleExpr> {
+        vec![
+            (&self.username).into(),
+            (&self.first_name).into(),
+            (&self.last_name).into(),
+            (&self.password).into()
+        ]
+    }
+}
+impl DatabaseUpdatable for DbUser {
+    fn id_col() -> Self::Identity {
+        RawUserIden::Username
+    }
+    fn id_val(&self) -> SimpleExpr {
+        (&self.username).into()
+    }
+}
+impl DbUser {
+    pub fn new(username: String, first_name: String, last_name: String, password: String, is_new: bool) -> Self {
         Self {
             username,
             first_name,
             last_name,
-            password
+            password,
+            is_new
         }
     }
 }

@@ -1,25 +1,17 @@
-use std::process::ExitCode;
+use std::{fmt::Display, process::ExitCode};
 
 pub mod io;
 pub mod auth;
 pub mod tool;
 pub mod loc;
+pub mod exec;
 
-use io::book::{AuthorGroup, BookOwner, GenreGroup, GroupBinding};
-use io::book_org::{Author, BookGroup, Genre};
-use io::usr::RawUser;
-use io::{book::Book, db::create_table_for};
-use tokio_postgres::{Client, connect, NoTls};
+use tokio_postgres::{connect, Client, NoTls};
 use tool::log::{LoggerLevel, LoggerRedirect, LOG};
 use loc::{make_log_path, PROG_NAME};
-use io::book::{get_all_db_data, activate_context};
 
 use clap::{Subcommand, Parser};
 use tool::version::CUR_VERSION;
-
-pub fn get_db_password() -> Result<String, std::env::VarError> {
-    std::env::var("POSTGRES_PASSWORD")
-}
 
 #[derive(Parser, Debug)]
 struct Arguments {
@@ -44,72 +36,22 @@ enum Commands {
     /// Displays the app's current version
     Version
 }
-
-pub async fn create_tables(conn: &mut tokio_postgres::Client) -> Result<(), postgres::Error> {
-    log_info!("Running create scripts");
-    log_debug!("Loading Book, RawUser, Genre, BookGroup, Author");
-    create_table_for::<Book>        (conn).await?;
-    create_table_for::<RawUser>     (conn).await?;
-    create_table_for::<Genre>       (conn).await?;  
-    create_table_for::<BookGroup>   (conn).await?;
-    create_table_for::<Author>      (conn).await?;
-
-    log_debug!("Loading GenreGroup, BookOwner, GroupBinding, AuthorGroup");
-    create_table_for::<GenreGroup>  (conn).await?;
-    create_table_for::<BookOwner>   (conn).await?;
-    create_table_for::<GroupBinding>(conn).await?;
-    create_table_for::<AuthorGroup> (conn).await?;
-
-    log_info!("Create successful.");
-
-    Ok( () )
-}
-
-pub async fn validate(conn: &mut Client) -> Result<(), ExitCode> {
-    if let Err(e) = create_tables(conn).await {
-        log_critical!("Unable to create database tables '{e}'");
-        return Err(ExitCode::FAILURE);
+impl Display for Commands {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Validate => "Validate",
+                Self::Info => "Info",
+                Self::Run => "Run",
+                Self::Version => "Version"
+            }
+        )
     }
-
-    Ok( () )
-}
-pub async fn info(conn: &mut Client) -> Result<(), ExitCode> {
-    validate(conn).await?;
-
-    let loaded_context = match get_all_db_data(conn).await {
-        Ok(v) => v,
-        Err(e) => {
-            log_error!("Unable to open context '{e}'");
-            return Err(ExitCode::FAILURE);
-        }
-    };
-
-    let active = activate_context(loaded_context);
-    println!("Database objects:");
-    println!("\t  Books  {}", active.books  .len());
-    println!("\t  Users  {}", active.users  .len());
-    println!("\t Groups  {}", active.groups .len());
-    println!("\t Genres  {}", active.genres .len());
-    println!("\tAuthors  {}", active.authors.len());
-
-    Ok( () )
-}
-pub async fn run(conn: &mut Client) -> Result<(), ExitCode> {
-    validate(conn).await?;
-
-    let mut signal = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt()).unwrap();
-    println!("Starting to wait...");
-    let _ = signal.recv().await;
-
-    println!("Kill signal received. Stopping.");
-
-    Ok( () )
 }
 
-#[tokio::main]
-pub async fn main() -> Result<(), ExitCode> {
-    let command = Arguments::parse();
-
+fn load_logger(command: &Arguments) -> Result<(), ExitCode> {
     let log_path = make_log_path();
     let level: LoggerLevel;
     let redirect: LoggerRedirect;
@@ -132,11 +74,13 @@ pub async fn main() -> Result<(), ExitCode> {
         return Err(ExitCode::FAILURE);
     }
 
-    log_info!("Starting up {}, Version {}", PROG_NAME, CUR_VERSION);
+    Ok( () )
+}
 
+async fn load_database() -> Result<Client, ExitCode> {
     log_info!("Attempting to start up connection.");
     log_info!("Obtaining password from env variable...");
-    let password = match get_db_password() {
+    let password = match exec::get_db_password() {
         Ok(v) => v,
         Err(e) => {
             log_critical!("Unable to get password '{e}'");
@@ -144,7 +88,7 @@ pub async fn main() -> Result<(), ExitCode> {
         }
     };
 
-    let (mut client, conn) = match connect(&format!("host=localhost user=postgres password={password}"), NoTls).await {
+    let (client, conn) = match connect(&format!("host=localhost user=postgres password={password}"), NoTls).await {
         Ok(v) => v,
         Err(e) => {
             log_critical!("Unable to open db {}", e);
@@ -158,12 +102,33 @@ pub async fn main() -> Result<(), ExitCode> {
         }
     });
 
+    Ok( client )
+}
 
-    match command.command {
-        None | Some(Commands::Run) => run(&mut client).await?,
-        Some(Commands::Info) => info(&mut client).await?,
-        Some(Commands::Validate) => validate(&mut client).await?,
-        Some(Commands::Version) => {
+#[tokio::main]
+pub async fn main() -> Result<(), ExitCode> {
+    let command = Arguments::parse();
+
+    load_logger(&command)?;
+
+    log_info!("Starting up {}, Version {}", PROG_NAME, CUR_VERSION);
+
+    let mut client = load_database().await?;
+
+    let to_run: Commands;
+    if let Some(command) = command.command {
+        log_info!("Processing top level command '{}'", &command);
+        to_run = command;
+    }
+    else {
+        to_run = Commands::Run;
+    }
+
+    match to_run {
+        Commands::Run => exec::run(&mut client).await?,
+        Commands::Info => exec::info(&mut client).await?,
+        Commands::Validate => exec::validate(&mut client).await?,
+        Commands::Version => {
             println!("{}, Version {}", PROG_NAME, CUR_VERSION);
         }
     }
