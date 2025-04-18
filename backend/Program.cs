@@ -1,29 +1,31 @@
 using backend;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-var builder = WebApplication.CreateBuilder(args);
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+        builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<Database>();
+        builder.Services.AddDbContext<Database>();
+        builder.Services.AddControllers();
 
-var app = builder.Build();
+        var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+        }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
+/*
 app.MapGet("/weatherforecast", () =>
     {
         var forecast = Enumerable.Range(1, 5).Select(index =>
@@ -37,10 +39,48 @@ app.MapGet("/weatherforecast", () =>
         return forecast;
     })
     .WithName("GetWeatherForecast");
+*/
 
-app.Run();
+        app.MapPost("/add-book/", async context =>
+        {
+            app.Logger.LogInformation("Adding book request");
+            try
+            {
+                AddBookRequest? info = await context.Request.ReadFromJsonAsync<AddBookRequest>();
+                if (info is null)
+                {
+                    app.Logger.LogWarning("Book not found");
+                    return;
+                }
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+                using var scope = app.Services.CreateScope();
+                var database = scope.ServiceProvider.GetRequiredService<Database>();
+                database.Books.Add(new backend.Info.Book(info.Id, info.Title));
+            }
+            catch (Exception ex)
+            {
+                app.Logger.LogError(ex.Message);
+            }
+        }).WithName("AddBook");
+
+        app.MapPost("/add-genre/", async context =>
+        {
+
+        }).WithName("AddGenre");
+        
+        app.Run();
+    }
+}
+
+record AddBookRequest
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int Id { get; init; }
+    public string Title { get; init; }
+}
+
+record AddGenreRequest
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
 }
