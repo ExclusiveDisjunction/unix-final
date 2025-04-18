@@ -1,8 +1,16 @@
+using System.Runtime.InteropServices.Swift;
+
 namespace backend.Info;
 
 public class Book
 {
-    public int Id { get; set; }
+    public Book(int id, string title)
+    {
+        this.Id = id;
+        this.Title = title;
+    }
+    
+    public int Id { get; init; }
     public string Title { get; set; }
     public int AuthorId { get; set; }
     public int GroupId { get; set; }
