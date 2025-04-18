@@ -24,6 +24,8 @@ install.sh will install the dependencies needed to run the project, including: n
 
 Alongside that, it will also initialize a ufw firewall for the machine. The specific rules it allows are for OpenSSH (for GCP VM SSHing) and HTTP and HTTPS. This will make the website visible to the outside world on port 80. 
 
+The script will ask what IP you want bound to the docker swarm for advertisement if there is more than one IP on the machine. This is to account for machines that have multiple network adapters, either physical or virtual.
+
 Following that, it will initially run deploy-swarm.sh, which builds the images necessary to run the project as well as updating them from the repo as needed.
 
 An option entry at the end of this script is provided in case the user wants to add in a cron job for deploy-swarm which will act as an update service for the images being used. 
