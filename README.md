@@ -27,6 +27,8 @@ Alongside that, it will also initialize a ufw firewall for the machine. The spec
 
 The script will ask what IP you want bound to the docker swarm for advertisement if there is more than one IP on the machine. This is to account for machines that have multiple network adapters, either physical or virtual.
 
+The script will ask what IP you want bound to the docker swarm for advertisement if there is more than one IP on the machine. This is to account for machines that have multiple network adapters, either physical or virtual.
+
 Following that, it will initially run deploy-swarm.sh, which builds the images necessary to run the project as well as updating them from the repo as needed.
 
 An optional entry at the end of this script is provided in case the user wants to add in a cron job for deploy-swarm which will act as an update service for the images being used. 
