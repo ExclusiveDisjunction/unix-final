@@ -13,6 +13,12 @@ public class Group
         this.Name = name;
         this.Description = description;
     }
+    public Group(string parent_id, string name, string? description)
+    {
+        this.ParentId = parent_id;
+        this.Name = name;
+        this.Description = description;
+    }
 
     public int Id { get; set; }
     public string ParentId { get; set; } = string.Empty;

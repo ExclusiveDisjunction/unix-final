@@ -12,4 +12,25 @@ Content-Type: application/json
 
 ###
 
+@username=string
+GET {{backend_HostAddress}}/{{username}}/books
+Accept: application/json
+Content-Type: application/json
+
+###
+
+@username=string
+GET {{backend_HostAddress}}/{{username}}/groups
+
+###
+
+@username=string
+POST {{backend_HostAddress}}/{{username}}/add-group
+Accept: application/json
+Content-Type: application/json 
+{
+    "Name": "testGroup"
+    "Description": "a very good description..."
+}
+
 ###

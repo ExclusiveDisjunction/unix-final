@@ -9,18 +9,29 @@ public class Program
 {
     private static WebApplication? _app;
 
+    private static async ValueTask<User?> GetUserAsync(Database database, string username)
+    {
+        var query = from user in database.Users
+                    where user.Username == username
+                    select user;
+
+        return await query.ElementAtAsync(0);
+    }
+
     private static async Task AddGenre(HttpContext context) 
     {
         if (_app is null) 
         {
             await Console.Error.WriteLineAsync("Application is not created.");
+            context.Response.StatusCode = 500;
             return;
         }
         
         try {
             var info = await context.Request.ReadFromJsonAsync<AddGenreRequest>();
             if (info is null) {
-                _app.Logger.LogWarning("The provided logger is invalid");
+                _app.Logger.LogError("The provided message is not valid JSON, and could not be represented as a AddGenreRequest.");
+                context.Response.StatusCode = 400;
                 return;
             }
 
@@ -29,6 +40,8 @@ public class Program
 
             var genre = new Info.Genre(info.Id, info.Name, info.Description);
             database.Genres.Add(genre);
+
+            context.Response.StatusCode = 200;
         }
         catch (JsonException jsonEx)
         {
@@ -53,7 +66,7 @@ public class Program
             var info = await context.Request.ReadFromJsonAsync<AddBookRequest>();
             if (info is null)
             {
-                _app.Logger.LogWarning("Book not found");
+                _app.Logger.LogError("The request is not valid JSON, or could not be parsed as an AddBookRequest.");
                 return;
             }
 
@@ -70,44 +83,136 @@ public class Program
 
     private static async Task AddGroup(HttpContext context, string username)
     {
-        
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return;
+        }
+
+        if (username is null || username.Length == 0)
+        {
+            context.Response.StatusCode = 400;
+            return;
+        }
+
+        _app.Logger.LogInformation($"Adding group request to user '{username}'");
+        Database database;
+        try
+        {
+            using var scope = _app.Services.CreateScope();
+            database = scope.ServiceProvider.GetRequiredService<Database>(); 
+        }
+        catch (InvalidOperationException ex)
+        {
+            _app.Logger.LogError($"Unable to get the database {ex}");
+            context.Response.StatusCode = 400;
+            return;
+        }
+
+        AddGroupRequest? request;
+        try
+        {
+            _app.Logger.LogInformation($"hopefully this works? {context.Request.Body.ToString()}");
+            request = await context.Request.ReadFromJsonAsync<AddGroupRequest>();
+        }
+        catch
+        {
+            request = null;
+        }
+
+        if (request is null)
+        {
+            _app.Logger.LogWarning($"Unable to parse JSON content into a AddGroupRequest");
+            context.Response.StatusCode = 400;
+            return;
+        }
+
+        var user = await GetUserAsync(database, username);
+        if (user is null)
+        {
+            _app.Logger.LogWarning("The user could not be found.");
+            context.Response.StatusCode = 404;
+            return;
+        }
+
+        var newGroup = new Info.Group(user.Username, request.Name, request.Description);
+        await database.Groups.AddAsync(newGroup);
+
+        context.Response.StatusCode = 200;
     }
 
-    private static async Task<List<Genre>> GetGenres(HttpContext context)
-    {
-        return [];
-    }
-
-    private static async Task<ActionResult<SignInResponse>> SignIn(HttpContext context)
-    {
-        return new ActionResult<SignInResponse>(new SignInResponse(false, "method not implemented", null));
-    }
-
-    private static async Task<SignInResponse> CreateUser(HttpContext context)
-    {
-        return new SignInResponse(false, "method not implemented", null);
-    }
-
-    private static async Task SignOut(HttpContext context)
-    {
-        
-    }
-
-    private static async Task<List<Group>?> GetGroups(HttpContext context, string username)
-    {
-        return null;
-    }
-
-    private static async Task<List<Author>> GetAuthors(HttpContext context, string username)
-    {
-        return [];
-    }
-    private static async Task<List<Book>?> GetBooks(HttpContext context, string username)
+    private static async Task GetGenres(HttpContext context)
     {
         if (_app is null)
         {
             await Console.Error.WriteLineAsync("Application is not created.");
-            return null;
+            return;
+        }
+
+        context.Response.StatusCode = 501;
+    }
+
+    private static async Task SignIn(HttpContext context)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return;
+        }
+
+        context.Response.StatusCode = 501;
+    }
+
+    private static async Task CreateUser(HttpContext context)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return;
+        }
+
+        context.Response.StatusCode = 501;
+    }
+
+    private static async Task SignOut(HttpContext context)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return;
+        }
+
+        context.Response.StatusCode = 501;
+    }
+
+    private static async Task GetGroups(HttpContext context, string username)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return;
+        }
+
+        context.Response.StatusCode = 501;
+    }
+
+    private static async Task GetAuthors(HttpContext context)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return;
+        }
+
+        context.Response.StatusCode = 501;
+    }
+    private static async Task GetBooks(HttpContext context, string username)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            context.Response.StatusCode = 500;
+            return;
         }
 
         _app.Logger.LogInformation($"Getting books for {username}");
@@ -117,11 +222,14 @@ public class Program
         {
             var database = scope.ServiceProvider.GetRequiredService<Database>();
 
-            var query = from user in database.Users
-                where user.Username == username
-                select user;
+            var selectedUser = await GetUserAsync(database, username);
+            if (selectedUser is null)
+            {
+                _app.Logger.LogWarning("The user could not be found.");
+                context.Response.StatusCode = 404;
+                return;
+            }
 
-            var selectedUser = await query.ElementAtAsync(0);
             var groups = selectedUser.Groups;
             var books = new List<Book>();
             foreach (var group in groups)
@@ -129,18 +237,19 @@ public class Program
                 books.AddRange(group.Books);
             }
 
-            return books;
+            await context.Response.WriteAsJsonAsync<List<Book>>(books);
+            context.Response.StatusCode = 200;
         }
         catch (InvalidOperationException ex)
         {
             _app.Logger.LogError($"The database could not be accessed '{ex}'");
+            context.Response.StatusCode = 500;
         }
         catch (ArgumentOutOfRangeException ex)
         {
             _app.Logger.LogError($"The database did not include a '{username}' user. Error: {ex}");
+            context.Response.StatusCode = 400;
         }
-
-        return null;
     }
 
     private static WebApplicationBuilder MakeBuilder(string[] args) {

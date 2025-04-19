@@ -16,6 +16,12 @@ record AddBookRequest
     public required List<String> Genres { get; init; }
 }
 
+record AddGroupRequest
+{
+    public required string Name { get; init; }
+    public string? Description { get; init; }
+}
+
 record AddGenreRequest
 {
     public int Id { get; init; }
