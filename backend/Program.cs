@@ -1,56 +1,59 @@
-using backend;
+using System.Text.Json;
+using backend.Info;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.ObjectPool;
-using Npgsql;
 
 namespace backend;
 
 public class Program
 {
-    private static WebApplication? app = null;
+    private static WebApplication? _app;
 
-    private static async void AddGenre(HttpContext context) 
+    private static async Task AddGenre(HttpContext context) 
     {
-        if (app is null) 
+        if (_app is null) 
         {
-            Console.Error.WriteLine("Application is not created.");
+            await Console.Error.WriteLineAsync("Application is not created.");
             return;
         }
-
-        app.Logger.LogInformation("Adding genre request");
+        
         try {
-            AddGenreRequest? info = await context.Request.ReadFromJsonAsync<AddGenreRequest>();
+            var info = await context.Request.ReadFromJsonAsync<AddGenreRequest>();
             if (info is null) {
-                app.Logger.LogWarning("The provided logger is invalid");
+                _app.Logger.LogWarning("The provided logger is invalid");
                 return;
             }
 
-            using var scope = app.Services.CreateScope();
+            using var scope = _app.Services.CreateScope();
             var database = scope.ServiceProvider.GetRequiredService<Database>();
 
             var genre = new Info.Genre(info.Id, info.Name, info.Description);
             database.Genres.Add(genre);
         }
-        catch (Exception ex) 
+        catch (JsonException jsonEx)
         {
-            app.Logger.LogWarning($"Unable to parse request to add genre, error {ex}");
+            _app.Logger.LogError($"Unable to parse request '{jsonEx}'");
+        }
+        catch (InvalidOperationException ex) 
+        {
+            _app.Logger.LogWarning($"The database could not be retrieved, error '{ex}");
         }
     }
-    private static async void AddBook(HttpContext context)
+    private static async Task AddBook(HttpContext context, string username)
     {
-        if (app is null) 
+        if (_app is null) 
         {
-            Console.Error.WriteLine("Application is not created.");
+            await Console.Error.WriteLineAsync("Application is not created.");
             return;
         }
 
-        app.Logger.LogInformation("Adding book request");
+        _app.Logger.LogInformation("Adding book request");
         try
         {
-            AddBookRequest? info = await context.Request.ReadFromJsonAsync<AddBookRequest>();
+            var info = await context.Request.ReadFromJsonAsync<AddBookRequest>();
             if (info is null)
             {
-                app.Logger.LogWarning("Book not found");
+                _app.Logger.LogWarning("Book not found");
                 return;
             }
 
@@ -61,17 +64,90 @@ public class Program
         } 
         catch (Exception ex)
         {
-            app.Logger.LogError($"Unable to parse book add request, error {ex.Message}");
+            _app.Logger.LogError($"Unable to parse book add request, error {ex.Message}");
         }
     }
 
-    private static WebApplicationBuilder? MakeBuilder(string[] args) {
+    private static async Task AddGroup(HttpContext context, string username)
+    {
+        
+    }
+
+    private static async Task<List<Genre>> GetGenres(HttpContext context)
+    {
+        return [];
+    }
+
+    private static async Task<ActionResult<SignInResponse>> SignIn(HttpContext context)
+    {
+        return new ActionResult<SignInResponse>(new SignInResponse(false, "method not implemented", null));
+    }
+
+    private static async Task<SignInResponse> CreateUser(HttpContext context)
+    {
+        return new SignInResponse(false, "method not implemented", null);
+    }
+
+    private static async Task SignOut(HttpContext context)
+    {
+        
+    }
+
+    private static async Task<List<Group>?> GetGroups(HttpContext context, string username)
+    {
+        return null;
+    }
+
+    private static async Task<List<Author>> GetAuthors(HttpContext context, string username)
+    {
+        return [];
+    }
+    private static async Task<List<Book>?> GetBooks(HttpContext context, string username)
+    {
+        if (_app is null)
+        {
+            await Console.Error.WriteLineAsync("Application is not created.");
+            return null;
+        }
+
+        _app.Logger.LogInformation($"Getting books for {username}");
+        
+        using var scope = _app.Services.CreateScope();
+        try
+        {
+            var database = scope.ServiceProvider.GetRequiredService<Database>();
+
+            var query = from user in database.Users
+                where user.Username == username
+                select user;
+
+            var selectedUser = await query.ElementAtAsync(0);
+            var groups = selectedUser.Groups;
+            var books = new List<Book>();
+            foreach (var group in groups)
+            {
+                books.AddRange(group.Books);
+            }
+
+            return books;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _app.Logger.LogError($"The database could not be accessed '{ex}'");
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            _app.Logger.LogError($"The database did not include a '{username}' user. Error: {ex}");
+        }
+
+        return null;
+    }
+
+    private static WebApplicationBuilder MakeBuilder(string[] args) {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        // Add all needed services. Use the custom database class.
         builder.Services.AddOpenApi();
-
         builder.Services.AddDbContext<Database>();
         builder.Services.AddControllers();
 
@@ -81,25 +157,28 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = MakeBuilder(args);
-        if (builder is null) {
-            Console.Error.WriteLine("Unable to create builder.");
-            return;
-        }
-
-        app = builder.Build();
+        _app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        if (_app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            _app.MapOpenApi();
         }
 
         //app.UseHttpsRedirection();
 
-        app.MapPost("/add-book/", Program.AddBook).WithName("AddBook");
-
-        app.MapPost("/add-genre/", Program.AddGenre).WithName("AddGenre");
+        _app.MapPost("/sign-in/", SignIn).WithName("SignIn");
+        _app.MapPost("/create-user/", CreateUser).WithName("CreateUser");
         
-        app.Run();
+        _app.MapPost("/{username}/add-book/", AddBook).WithName("AddBook");
+        _app.MapPost("/{username}/add-group/", AddGroup).WithName("AddGroup");
+        _app.MapPost("/add-genre/", AddGenre).WithName("AddGenre");
+        
+        _app.MapGet("/{username}/books", GetBooks).WithName("GetBooks");
+        _app.MapGet("/genres/", GetGenres).WithName("GetGenres");
+        _app.MapGet("/{username}/groups/", GetGroups).WithName("GetGroups");
+        _app.MapGet("/authors/", GetAuthors).WithName("GetAuthors");
+        
+        _app.Run();
     }
 }
