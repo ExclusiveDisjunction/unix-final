@@ -8,6 +8,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["backend.csproj", "./"]
+RUN --mount=type=secret,id=postgres_password,target=/etc/backend/db_pass
 RUN dotnet restore "backend.csproj"
 COPY . .
 WORKDIR "/src/"

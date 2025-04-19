@@ -11,9 +11,26 @@ public class Database : DbContext
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<Book> Books => Set<Book>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected async override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+        string password;
+        try 
+        {   
+            var binary = await File.ReadAllBytesAsync("/etc/backend/db_pass");
+            if (binary is null) 
+            {
+                await Console.Error.WriteLineAsync($"Unable to find database key file.");
+                return;    
+            }
+
+            password = System.Text.Encoding.UTF8.GetString(binary);
+        }
+        catch (FileNotFoundException e)
+        {
+            await Console.Error.WriteLineAsync($"Unable to find database key file, error: {e}.");
+            return;
+        }
+
         if (password is null)
         {
             throw new Exception("The database password is not presented.");
