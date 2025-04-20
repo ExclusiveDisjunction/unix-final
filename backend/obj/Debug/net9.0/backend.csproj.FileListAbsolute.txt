@@ -137,3 +137,4 @@
 /Volumes/Prog/repos/unix-final/backend/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /Volumes/Prog/repos/unix-final/backend/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
 /Volumes/Prog/repos/unix-final/backend/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
+/Volumes/Prog/repos/unix-final/backend/bin/Debug/net9.0/BCrypt.Net-Next.dll

@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace backend;
 
-public class Program
+public static class Program
 {
     internal static WebApplication? App;
     
@@ -32,7 +32,7 @@ public class Program
         builder.Services.AddDbContext<Database>();
         builder.Services.AddControllers();
         
-        var keyValue = await UserMgnt.GetJwtKey();
+        var keyValue = await UserManagement.GetJwtKey();
         if (keyValue is null)
         {
             throw new Exception("The JWT key value is not found.");
@@ -44,13 +44,11 @@ public class Program
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidIssuer = "dotnet-backend",          // must match
-                        ValidAudience = "your_audience",         // must match
-                        IssuerSigningKey = new SymmetricSecurityKey(keyValue),
+                        ValidIssuer = "dotnet-backend",
+                        ValidAudience = "your_audience",
+                        IssuerSigningKey = new SymmetricSecurityKey(keyValue)
                     };
                 });
-            //.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
-            //    options => builder.Configuration.Bind("CookieSettings", options));
         builder.Services.AddAuthorization();
 
         return builder;
@@ -66,7 +64,7 @@ public class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex.Message);
-            return;
+            throw;
         }
 
         // Configure the HTTP request pipeline.
@@ -79,44 +77,65 @@ public class Program
         App.UseAuthorization();
 
         //app.UseHttpsRedirection();
-
-        App.MapGet("/generate-token/{username}", UserMgnt.GenerateTokenRoute);
+        
         //Expects SignInRequest, responds UserInformation?
-        App.MapPost("/sign-in/", UserMgnt.SignIn)
+        App.MapPost("/sign-in/", UserManagement.SignIn)
             .WithName("SignIn");
         //Expects CreateUserRequest, responds UserInformation?
-        App.MapPost("/create-user/", UserMgnt.CreateUser)
+        App.MapPost("/create-user/", UserManagement.CreateUser)
             .WithName("CreateUser"); 
-        // Expects JWT as string, responds with only http code
-        App.MapPost("/sign-out/{username}", UserMgnt.SignOut).WithName("SignOut");
+        //Expects EditUserRequest, responds Ok/Conflict
+        App.MapPost("/modify_user/{username}", UserManagement.ModifyUser)
+            .WithName("ModifyUser")
+            .RequireAuthorization();
         
-        // Expects JWT in header 'Authorization & AddBookRequest, responds with http code
-        App.MapPost("/{username}/add-book/", BookMgnt.AddBook)
+        // Expects JWT in header 'Authorization' & AddBookRequest, responds with http code
+        App.MapPost("/{username}/add-book/", BookManagement.AddBook)
             .WithName("AddBook")
             .RequireAuthorization();
         // Expects JWT in header 'Authorization', responds [Book]?
-        App.MapGet("/{username}/books", BookMgnt.GetBooks)
+        App.MapGet("/{username}/books", BookManagement.GetBooks)
             .WithName("GetBooks")
             .RequireAuthorization();
-        // Expects JWT in header 'Authorization, responds [Author]?
-        App.MapGet("/authors/", BookMgnt.GetAuthors)
+        // Expects JWT in header 'Authorization' & EditBookRequest, responds with http code
+        App.MapPost("/{username}/add-book/", BookManagement.EditBook)
+            .WithName("EditBook")
+            .RequireAuthorization();
+        // Expects JWT in header 'Authorization' & AuthorData, responds (Ok & AuthorID (int))/Conflict
+        App.MapPost("/add-author", BookManagement.AddAuthor)
+            .WithName("AddAuthor")
+            .RequireAuthorization();
+        // Expects JWT in header 'Authorization', responds [Author]?
+        App.MapGet("/authors/", BookManagement.GetAuthors)
             .WithName("GetAuthors")
             .RequireAuthorization();
+        // Expects JWT in header 'Authorization' & EditAuthorRequest, responds Ok/Conflict
+        App.MapPost("/edit-author", BookManagement.EditAuthor)
+            .WithName("EditAuthor")
+            .RequireAuthorization();
         
-        // Expects JWT in header 'Authorization & AddGroupRequest, responds with HTTP code.
-        App.MapPost("/{username}/add-group/", Organization.AddGroup)
+        // Expects JWT in header 'Authorization' & AddGroupRequest, responds with HTTP code.
+        App.MapPost("/{username}/add-group/", OrgManagement.AddGroup)
             .WithName("AddGroup")
             .RequireAuthorization();
-        // Expects JWT in header 'Authorization, responds [Group]?
-        App.MapGet("/{username}/groups/", Organization.GetGroups)
+        // Expects JWT in header 'Authorization', responds [Group]?
+        App.MapGet("/{username}/groups/", OrgManagement.GetGroups)
             .WithName("GetGroups")
             .RequireAuthorization();
-        // Expects JWT in header 'Authorization & AddGenreRequest, responds with HTTP code.
-        App.MapPost("/add-genre/", Organization.AddGenre)
+        // Expects JWT in header 'Authorization' & EditOrganizationRequest, Responds Ok/Conflict
+        App.MapPost("/{username}/edit-group", OrgManagement.EditGroup)
+            .WithName("ModifyGroup")
+            .RequireAuthorization();
+        // Expects JWT in header 'Authorization' & EditOrganizationRequest, Responds Ok/Conflict
+        App.MapPost("/edit-genre", OrgManagement.EditGenre)
+            .WithName("EditGenre")
+            .RequireAuthorization();
+        // Expects JWT in header 'Authorization' & AddGenreRequest, responds with HTTP code.
+        App.MapPost("/add-genre/", OrgManagement.AddGenre)
             .WithName("AddGenre")
             .RequireAuthorization();
-        // Expects JWT in header 'Authorization, responds with [Genre]?
-        App.MapGet("/genres/", Organization.GetGenres)
+        // Expects JWT in header 'Authorization', responds with [Genre]?
+        App.MapGet("/genres/", OrgManagement.GetGenres)
             .WithName("GetGenres")
             .RequireAuthorization();
 
