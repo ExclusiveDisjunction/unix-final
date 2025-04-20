@@ -1,41 +1,57 @@
 import React, { useState } from 'react';
 import '../css/register.css';
+import { useNavigate } from 'react-router-dom';
 
 const GoogleFontsStyle = `
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap');
 `;
 
 export const Register = () => {
+    const navigate = useNavigate
+    const [message, setMessage] = useState('');
+    
     const [formData, setFormData] = useState({
         username: '',
         password: '',
         confirmPassword: '',
     });
-
-    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [e.target.name]: e.target.value,
         }));
     };
 
-    const handleFormSubmit = async (event) => {
-        event.preventDefault();
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
 
-        setMessage('Registering...');
+        try{
+            const response = await fetch('http://localhost:5072/create-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-        setTimeout(() => {
-            if (formData.username === '' || formData.email === '' || formData.password === '' || formData.confirmPassword === '') {
-                setMessage('All fields are required.');
-            } else if (formData.password !== formData.confirmPassword) {
-                setMessage('Passwords do not match.');
-            } else {
-                setMessage('Registration successful! You can now log in.');
+            if (response.status === 409) {
+                setError('User already exist');
+                return;
             }
-        }, 1000); 
+            if (!response.ok) {
+                setError('Failed to Register');
+                return;
+            }
+
+            const token = await response.text();
+            localStorage.setItem('token', token);
+            navigate('/login');
+        } catch (error) {
+            setError('Error connecting to the server');
+        }
     };
 
     return (
