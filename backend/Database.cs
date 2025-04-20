@@ -50,6 +50,10 @@ public class Database : DbContext
             .Property(u => u.LastName)
             .HasMaxLength(50)
             .IsRequired();
+        modelBuilder.Entity<User>()
+            .Property(u => u.PasswordHash)
+            .HasMaxLength(512)
+            .IsRequired();
 
         modelBuilder.Entity<Author>()
             .HasKey(u => u.Id);
