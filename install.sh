@@ -15,8 +15,9 @@ USER_HOME=$(eval echo "~$USER")
 #this allows for the deploy-swarm to do the git pulls of the repo without user intervention
 sudo git config --system --add safe.directory "$USER_HOME/unix-final"
 
-#installs the dependency from npm
+#installs the dependencies from npm
 npm install react-router-dom
+npm install lucide-react
 
 #checks to see if docker is installed and installs it if it isn't
 if ! command -v "docker" 2>&1 >/dev/null; then
