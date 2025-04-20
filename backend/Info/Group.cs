@@ -6,18 +6,18 @@ public class Group
     {
 
     }
-    public Group(int id, string parent_id, string name, string? description) 
+    public Group(int id, string parentId, string name, string? description) 
     {
-        this.Id = id;
-        this.ParentId = parent_id;
-        this.Name = name;
-        this.Description = description;
+        Id = id;
+        ParentId = parentId;
+        Name = name;
+        Description = description;
     }
-    public Group(string parent_id, string name, string? description)
+    public Group(string parentId, string name, string? description)
     {
-        this.ParentId = parent_id;
-        this.Name = name;
-        this.Description = description;
+        ParentId = parentId;
+        Name = name;
+        Description = description;
     }
 
     public int Id { get; set; }

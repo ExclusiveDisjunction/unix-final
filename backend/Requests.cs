@@ -4,27 +4,20 @@ namespace backend;
 
 record UserInformation(string Username, string FirstName, string LastName, string Jwt);
 
-record SignInResponse(bool IsOk, string? Message, UserInformation? Info);
+record SignInRequest(string Username, string Password);
 
-record AddBookRequest
-{
-    public required string Title { get; init; }
-    public required string AuthorID { get; init; }
-    public required string GroupName { get; init; }
-    public required short Rating { get; init; }
-    public required bool IsFavorite { get; init; }
-    public required List<String> Genres { get; init; }
-}
+record CreateUserRequest(string Username, string FirstName, string LastName, string Password);
 
-record AddGroupRequest
-{
-    public required string Name { get; init; }
-    public string? Description { get; init; }
-}
+record AddBookRequest(
+    string JWT,
+    string Title,
+    int Author,
+    string GroupName,
+    short Rating,
+    bool IsFavorite,
+    List<String> Genres
+);
 
-record AddGenreRequest
-{
-    public int Id { get; init; }
-    public required string Name { get; init; }
-    public string? Description { get; init; }
-}
+record AddGroupRequest(string Jwt, string Name, string? Description);
+
+record AddGenreRequest(string Jwt, string Name, string? Description);
