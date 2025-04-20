@@ -90,32 +90,32 @@ public class Program
         // Expects JWT as string, responds with only http code
         App.MapPost("/sign-out/{username}", UserMgnt.SignOut).WithName("SignOut");
         
-        // Expects AddBookRequest, responds with http code
+        // Expects JWT in header 'Authorization & AddBookRequest, responds with http code
         App.MapPost("/{username}/add-book/", BookMgnt.AddBook)
             .WithName("AddBook")
             .RequireAuthorization();
-        // Expects JWT in header 'Authentication', responds [Book]?
+        // Expects JWT in header 'Authorization', responds [Book]?
         App.MapGet("/{username}/books", BookMgnt.GetBooks)
             .WithName("GetBooks")
             .RequireAuthorization();
-        // Expects JWT in header 'Authentication', responds [Author]?
+        // Expects JWT in header 'Authorization, responds [Author]?
         App.MapGet("/authors/", BookMgnt.GetAuthors)
             .WithName("GetAuthors")
             .RequireAuthorization();
         
-        // Expects AddGroupRequest, responds with HTTP code.
+        // Expects JWT in header 'Authorization & AddGroupRequest, responds with HTTP code.
         App.MapPost("/{username}/add-group/", Organization.AddGroup)
             .WithName("AddGroup")
             .RequireAuthorization();
-        // Expects JWT in header 'Authentication', responds [Group]?
+        // Expects JWT in header 'Authorization, responds [Group]?
         App.MapGet("/{username}/groups/", Organization.GetGroups)
             .WithName("GetGroups")
             .RequireAuthorization();
-        // Expects AddGenreRequest, responds with HTTP code.
+        // Expects JWT in header 'Authorization & AddGenreRequest, responds with HTTP code.
         App.MapPost("/add-genre/", Organization.AddGenre)
             .WithName("AddGenre")
             .RequireAuthorization();
-        // Expects JWT in header 'Authentication', responds with [Genre]?
+        // Expects JWT in header 'Authorization, responds with [Genre]?
         App.MapGet("/genres/", Organization.GetGenres)
             .WithName("GetGenres")
             .RequireAuthorization();
