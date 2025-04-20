@@ -31,7 +31,7 @@ public class Database : DbContext
             throw new Exception("The database password is not presented.");
         }
         
-        optionsBuilder.UseNpgsql($"Host=localhost;Username=postgres;Password={password}");
+        optionsBuilder.UseNpgsql($"Host=db;Username=postgres;Password={password}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
