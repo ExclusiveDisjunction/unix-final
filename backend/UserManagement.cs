@@ -61,7 +61,8 @@ public static class UserManagement
             return null;
         }
     }
-    private static async ValueTask<string?> GenerateToken(User target)
+
+    private static async ValueTask<string?> GenerateUnboundedToken()
     {
         var keyValue = await GetJwtKey();
         if (keyValue is null)
@@ -77,13 +78,34 @@ public static class UserManagement
             expires: DateTime.Now.AddMinutes(30),
             signingCredentials: credentials);
 
-        var result = new JwtSecurityTokenHandler().WriteToken(token);
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    private static async ValueTask<string?> GenerateToken(User target)
+    {
+        var result = await GenerateUnboundedToken();
         if (result is null)
             return null;
 
         ActiveUsers[result] = target.Username;
 
         return result;
+    }
+
+    internal static async Task GenerateTokenRoute(HttpContext context)
+    {
+        var app = AppTools.GetApp();
+        
+        app.Logger.LogInformation("Generating a token");
+        var token = await GenerateUnboundedToken();
+        if (token is null)
+        {
+            app.Logger.LogWarning("The token could not be made");
+            context.Response.StatusCode = 500;
+            return;
+        }
+
+        context.Response.StatusCode = 200;
+        await context.Response.WriteAsync(token);
     }
     
     internal static async Task SignIn(HttpContext context)

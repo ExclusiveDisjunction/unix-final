@@ -77,7 +77,9 @@ public static class Program
         App.UseAuthorization();
 
         //app.UseHttpsRedirection();
-        
+
+        App.MapGet("/generate-token/", UserManagement.GenerateTokenRoute)
+            .WithName("GenerateToken");
         //Expects SignInRequest, responds UserInformation?
         App.MapPost("/sign-in/", UserManagement.SignIn)
             .WithName("SignIn");
