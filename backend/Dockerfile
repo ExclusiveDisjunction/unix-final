@@ -29,6 +29,7 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
+RUN dotnet tool install --global dotnet-ef
 RUN dotnet ef database update --project "backend.csproj"
 
 FROM base AS final
