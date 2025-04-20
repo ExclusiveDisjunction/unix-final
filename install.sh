@@ -6,7 +6,7 @@ if ! command -v "npm" 2>&1 >/dev/null; then
 fi
 
 chmod u+x deploy-swarm.sh
-
+SCRIPT="./deploy-swarm.sh"
 USER_HOME=$(eval echo "~$USER")
 
 sudo git config --system --add safe.directory "$USER_HOME/unix-final"
