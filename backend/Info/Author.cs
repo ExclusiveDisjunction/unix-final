@@ -3,17 +3,17 @@ namespace backend.Info;
 public class Author
 {
     public Author() { } 
-    public Author(int id, string first_name, string last_name, List<Book> books) 
+    public Author(int id, string firstName, string lastName, List<Book> books) 
     {
-        this.Id = id;
-        this.FirstName = first_name;
-        this.LastName = last_name;
-        this.Books = books;
+        Id = id;
+        FirstName = firstName;
+        LastName = lastName;
+        Books = books;
     }
 
     public int Id { get; set; }
-    public required string FirstName { get; set; }
-    public required string LastName { get; set; }
+    public required string FirstName { get; set; } = String.Empty;
+    public required string LastName { get; set; } = String.Empty;
 
     public List<Book> Books { get; set; } = [];
 }

@@ -11,24 +11,19 @@ public class Database : DbContext
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<Book> Books => Set<Book>();
 
-    protected async override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         string password;
         try 
         {   
-            var binary = await File.ReadAllBytesAsync("/etc/backend/db_pass");
-            if (binary is null) 
-            {
-                await Console.Error.WriteLineAsync($"Unable to find database key file.");
-                return;    
-            }
+            var binary = File.ReadAllBytes("/etc/backend/db_pass");
 
             password = System.Text.Encoding.UTF8.GetString(binary);
         }
         catch (FileNotFoundException e)
         {
-            await Console.Error.WriteLineAsync($"Unable to find database key file, error: {e}.");
-            return;
+            Console.Error.WriteLine($"Unable to find database key file, error: {e}.");
+            throw new Exception("Unable to open the database password.");
         }
 
         if (password is null)
@@ -43,22 +38,79 @@ public class Database : DbContext
     {
         modelBuilder.Entity<User>()
             .HasKey(u => u.Username);
-        
+        modelBuilder.Entity<User>()
+            .Property(u => u.Username)
+            .IsRequired()
+            .HasMaxLength(50);
+        modelBuilder.Entity<User>()
+            .Property(u => u.FirstName)
+            .IsRequired()
+            .HasMaxLength(50);
+        modelBuilder.Entity<User>()
+            .Property(u => u.LastName)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        modelBuilder.Entity<Author>()
+            .HasKey(u => u.Id);
+        modelBuilder.Entity<Author>()
+            .Property(u => u.FirstName)
+            .IsRequired()
+            .HasMaxLength(50);
+        modelBuilder.Entity<Author>()
+            .Property(u => u.LastName)
+            .IsRequired()
+            .HasMaxLength(50);
+        modelBuilder.Entity<Author>()
+            .HasIndex(u => new { u.FirstName, u.LastName })
+            .IsUnique();
+
+        modelBuilder.Entity<Genre>()
+            .HasKey(g => g.Name);
+        modelBuilder.Entity<Genre>()
+            .Property(g => g.Name)
+            .IsRequired()
+            .HasMaxLength(50);
+        modelBuilder.Entity<Genre>()
+            .Property(g => g.Description)
+            .HasMaxLength(250);
+        modelBuilder.Entity<Genre>()
+            .HasMany(u => u.Books)
+            .WithMany(u => u.Genres);
+
         modelBuilder.Entity<Group>()
             .HasOne(u => u.Parent)
             .WithMany(p => p.Groups)
             .HasForeignKey(u => u.ParentId);
+        modelBuilder.Entity<Group>()
+            .HasIndex(u => new { u.Name, u.ParentId })
+            .IsUnique();
+        modelBuilder.Entity<Group>()
+            .HasKey(u => u.Id);
+        modelBuilder.Entity<Group>()
+            .Property(u => u.Name)
+            .HasMaxLength(50);
+        modelBuilder.Entity<Group>()
+            .Property(u => u.Description)
+            .HasMaxLength(250);
+        modelBuilder.Entity<Group>()
+            .Property(u => u.ParentId)
+            .HasMaxLength(50);
         
         modelBuilder.Entity<Book>()
             .HasOne(u => u.Author)
             .WithMany(a => a.Books)
             .HasForeignKey(u => u.AuthorId);
-        
         modelBuilder.Entity<Book>()
             .HasOne(u => u.Group)
             .WithMany(g => g.Books)
             .HasForeignKey(u => u.GroupId);
-        
-        
+        modelBuilder.Entity<Book>()
+            .Property(u => u.Title)
+            .HasMaxLength(50);
+        modelBuilder.Entity<Book>()
+            .HasIndex(u => new { u.GroupId, u.Title })
+            .IsUnique();
+
     }
 }
