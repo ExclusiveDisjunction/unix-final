@@ -27,9 +27,12 @@ services:
         app: front-app
     depends_on:
       - db
-       # condition: service_healthy
       - backend
-   #     condition: service_healthy
+    healthcheck:
+      test: ["CMD", "sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   backend:
     image: back
     ports:
@@ -43,7 +46,6 @@ services:
         app: back-app
     depends_on:
       - db
-        #condition: service_healthy
     healthcheck:
       test: ["CMD", "sh"]
       interval: 10s
