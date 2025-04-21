@@ -39,6 +39,7 @@ if ! command -v "ufw" 2>&1 >/dev/null; then
   apt install ufw -y
   ufw allow OpenSSH
   ufw allow http
+  ufw allow 8080
   echo "y" | ufw enable
   ufw reload
 fi
