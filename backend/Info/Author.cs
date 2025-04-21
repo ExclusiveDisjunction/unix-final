@@ -8,29 +8,26 @@ public class Author : IDbModify<Author, AddAuthorRequest, EditAuthorRequest, Aut
     
     public List<Book> Books { get; set; } = [];
 
-    public static Task<Author> CreateFromAsync(AddAuthorRequest source, Database database)
+    public static Author CreateFrom(AddAuthorRequest source, Database database)
     {
-        return new Task<Author>(() => new Author
+        return new Author
         {
             FirstName = source.FirstName,
             LastName = source.LastName
-        });
+        };
     }
 
-    public Task UpdateFromAsync(EditAuthorRequest source, Database database)
+    public void UpdateFrom(EditAuthorRequest source, Database database)
     {
-        return new Task(() =>
+        if (source.FirstName is not null)
         {
-            if (source.FirstName is not null)
-            {
-                FirstName = source.FirstName;
-            }
+            FirstName = source.FirstName;
+        }
 
-            if (source.LastName is not null)
-            {
-                LastName = source.LastName;
-            }
-        });
+        if (source.LastName is not null)
+        {
+            LastName = source.LastName;
+        }
     }
 
     public AuthorData GenerateData()

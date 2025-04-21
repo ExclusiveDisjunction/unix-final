@@ -21,9 +21,11 @@ public static class OrgManagement
             return;
         
         app.Logger.LogInformation($"Adding genre with name '{request.Name}'");
-        var genre = await Genre.CreateFromAsync(request, database);
+        var genre = Genre.CreateFrom(request, database);
         await database.Genres.AddAsync(genre);
+        app.Logger.LogInformation($"Genre added. Saving.");
         await database.SaveChangesAsync();
+        app.Logger.LogInformation($"Genre added. Saving complete.");
 
         context.Response.StatusCode = 200;
     }
@@ -89,7 +91,7 @@ public static class OrgManagement
         
         try
         {
-            var newGroup = await Group.CreateFromAsync(request, database);
+            var newGroup = Group.CreateFrom(request, database);
             newGroup.ParentId = username;
             newGroup.Parent = user;
             

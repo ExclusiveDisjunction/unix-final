@@ -24,7 +24,7 @@ public static class BookManagement
         
         try
         {
-            var target = await Book.CreateFromAsync(request, database);
+            var target = Book.CreateFrom(request, database);
             database.Books.Add(target);
             
             await database.SaveChangesAsync();
@@ -120,7 +120,7 @@ public static class BookManagement
 
         try
         {
-            var newAuthor = await Author.CreateFromAsync(request, database);
+            var newAuthor = Author.CreateFrom(request, database);
 
             await database.Authors.AddAsync(newAuthor);
             await database.SaveChangesAsync();

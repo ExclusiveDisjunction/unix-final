@@ -1,5 +1,3 @@
-using BCrypt.Net;
-
 namespace backend.Info;
 
 public class User : IDbUpdatable<EditUserRequest>
@@ -11,19 +9,16 @@ public class User : IDbUpdatable<EditUserRequest>
 
     public List<Group> Groups { get; set; } = [];
 
-    public Task UpdateFromAsync(EditUserRequest source, Database database)
+    public void UpdateFrom(EditUserRequest source, Database database)
     {
-        return new Task(() =>
-        {
-            if (source.FirstName is not null)
-                FirstName = source.FirstName;
+        if (source.FirstName is not null)
+            FirstName = source.FirstName;
 
-            if (source.LastName is not null)
-                LastName = source.LastName;
+        if (source.LastName is not null)
+            LastName = source.LastName;
 
-            if (source.Password is not null)
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(source.Password);
-        });
+        if (source.Password is not null)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(source.Password);
     }
 
     public UserInformation GenerateData(string jwt)
