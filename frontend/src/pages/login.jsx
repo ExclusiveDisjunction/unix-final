@@ -6,37 +6,46 @@ const GoogleFontsStyle = `
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap');
 `;
 
-export const Login = ({ onLogin }) => {
-    const [formData, setFormData] = useState({
-        username: 'admin',
-        password: 'pass123',
-    })
-
-    const [message, setMessage] = useState('');
+function Login({ onLogin }) {
     const navigate = useNavigate();
-
-    const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        })) 
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+    });
+    const handleInputChange = (e)=> {
+        setFormData({...formData, [e.target.name]: e.target.value});
     };
 
-    const handleFormSubmit= async(event) => {
-        event.preventDefault();
+    const handleFormSubmit= async(e)=>{
+        e.preventDefault();
+        setMessage('Logging in');
 
-        setMessage('Signing in!');
-        setTimeout(() => {
-            if(formData.username === 'admin'&& formData.password === 'pass123'){
-                setMessage('Login successful!');
-                if (onLogin) onLogin(); 
-                navigate('/');
-            } else {
-                setMessage('Invalid Login');  
+        try {
+            const response= await fetch(`${process.env.REACT_APP_API_URL}/sign-in`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+            if (response.status=== 501){
+                setError('Login not implemented');
+                return;
             }
-        }, 1000);
+            if (!response.ok){
+                setError('Invalid uername or password');
+                return;
+            }
 
+            const token = await response.text();
+
+            localStorage.setItem('token',token);
+            navigate('/dahsboard');
+        }catch (error) {
+            setMessage('Error connecting to the server');
+    }
     };
 
     return(

@@ -94,6 +94,7 @@ public static class UserManagement
 
         return result;
     }
+<<<<<<< HEAD
 
     internal static async Task GenerateTokenRoute(HttpContext context)
     {
@@ -111,6 +112,8 @@ public static class UserManagement
         context.Response.StatusCode = 200;
         await context.Response.WriteAsync(token);
     }
+=======
+>>>>>>> app-deploy
     
     internal static async Task SignIn(HttpContext context)
     {
