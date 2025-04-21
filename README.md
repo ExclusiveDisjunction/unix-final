@@ -3,7 +3,7 @@
 ## Table of Contents
 
 ## Installation
-Installation on a new Linux virtual machine is the easiest, since the project utilizes firewall rules that are implemented automatically. It is recommended to have either a decent amount of RAM or a swap partition setup on the device this is being implemented on. 
+Installation on a new Linux virtual machine is the easiest, since the project utilizes firewall rules that are implemented automatically. It is recommended to have either a decent amount of RAM or a swap partition setup on the device this is being implemented on. If installing on a GCP VM ensure that the VM has HTTP allow for the firewall rule and to make a firewall rule for port 8080 on all instances on the network on 0.0.0.0/0
 
 To start, firstly make sure git is installed on the machine.
 ### `sudo apt install git`
