@@ -23,7 +23,7 @@ function Login({ onLogin }) {
         setMessage('Logging in');
 
         try {
-            const response= await fetch('http://backend:8080/create-user', {
+            const response= await fetch(`${process.env.REACT_APP_API_URL}/sign-in`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

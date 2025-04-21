@@ -15,9 +15,9 @@ export default function Navbar() {
     }, [])
 
     const navItems = [
-        {name: "Dashboard", href: "/dashboard", icon: <House className="h-4 w-4" />},
-        {name: "Books", href: "/books", icon: <LibraryBig className="h-4 w-4" />},
-        {name: "Collections", href: "/collections", icon: <BookCopy className="h-4 w-4" />},
+        {name: "Dashboard", href: "/#dashboard", icon: <House className="h-4 w-4" />},
+        {name: "Books", href: "/#books", icon: <LibraryBig className="h-4 w-4" />},
+        {name: "Collections", href: "/#collections", icon: <BookCopy className="h-4 w-4" />},
     ]
 
     return (
