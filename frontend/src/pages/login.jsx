@@ -23,7 +23,7 @@ function Login({ onLogin }) {
         setMessage('Logging in');
 
         try {
-            const response= await fetch('http://localhost:8080/sign-in', {
+            const response= await fetch('http://backend:8080/create-user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
