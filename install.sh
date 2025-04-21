@@ -1,6 +1,10 @@
 #!/bin/sh
 cd "$(dirname "$0")" || exit 1
 
+EXTERNAL_IP=$(curl -s http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip -H "Metadata-Flavor: Google")
+
+echo "EXTERNAL_BACKEND_IP=$EXTERNAL_IP" > .env
+
 #this checks to see if the npm dependency is installed, installs it if it isnt
 if ! command -v "npm" 2>&1 >/dev/null; then
   npm install -y
