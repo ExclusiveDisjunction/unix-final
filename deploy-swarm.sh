@@ -6,8 +6,8 @@ cd "$(dirname "$0")" || exit 1
 #if not using a github repo to manage the frontend, backend, and db comment out the next line, otherwise update with your github repo and branch
 git pull https://github.com/ExclusiveDisjunction/unix-final.git main
 
-DOCKER_BUILDKIT=1 docker build -t front ./frontend
-DOCKER_BUILDKIT=1 docker build -t back ./backend
+DOCKER_BUILDKIT=1 docker build -t frontend ./frontend
+DOCKER_BUILDKIT=1 docker build -t backback ./backend
 
 #this is used to select an ip address for the swarm to linked to and advertise from
 #primarily applicable on machines that have multiple IP addresses from having several network adapters either physical or virtual
