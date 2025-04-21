@@ -29,7 +29,7 @@ export const Register = () => {
         setError('');
 
         try{
-            const response = await fetch('http://localhost:5072/create-user', {
+            const response = await fetch('http://localhost:8080/create-user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
