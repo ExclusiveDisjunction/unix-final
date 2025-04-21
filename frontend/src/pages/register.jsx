@@ -29,7 +29,7 @@ export const Register = () => {
         setError('');
 
         try{
-            const response = await fetch('http://backend:8080/create-user', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/create-user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
