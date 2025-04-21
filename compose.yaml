@@ -12,13 +12,11 @@ services:
     image: frontend
     environment:
       NODE_ENV: production
+      REACT_APP_API_URL: http://backend:8080
     ports:
-      - target: 3000
-        published: 80
-        protocol: tcp
-        mode: ingress
+      - "80:3000"
     deploy:
-      replicas: 1
+      replicas: 3
       update_config:
         parallelism: 2
         delay: 10s
@@ -39,7 +37,7 @@ services:
       - "5432:5432"
       - "8080:8080"
     deploy:
-      replicas: 1
+      replicas: 3
       update_config:
         parallelism: 2
         delay: 10s
