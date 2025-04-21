@@ -7,8 +7,8 @@ cd "$(dirname "$0")" || exit 1
 git pull https://github.com/ExclusiveDisjunction/unix-final.git main
 
 DOCKER_BUILDKIT=1 docker build -t frontend ./frontend
-DOCKER_BUILDKIT=1 docker build -t backback ./backend
-
+DOCKER_BUILDKIT=1 docker build -t backend ./backend
+docker pull postgres
 #this is used to select an ip address for the swarm to linked to and advertise from
 #primarily applicable on machines that have multiple IP addresses from having several network adapters either physical or virtual
 if ! docker info | grep -q "Swarm: active"; then
