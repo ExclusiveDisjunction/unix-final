@@ -94,26 +94,6 @@ public static class UserManagement
 
         return result;
     }
-<<<<<<< HEAD
-
-    internal static async Task GenerateTokenRoute(HttpContext context)
-    {
-        var app = AppTools.GetApp();
-        
-        app.Logger.LogInformation("Generating a token");
-        var token = await GenerateUnboundedToken();
-        if (token is null)
-        {
-            app.Logger.LogWarning("The token could not be made");
-            context.Response.StatusCode = 500;
-            return;
-        }
-
-        context.Response.StatusCode = 200;
-        await context.Response.WriteAsync(token);
-    }
-=======
->>>>>>> app-deploy
     
     internal static async Task SignIn(HttpContext context)
     {
