@@ -18,7 +18,7 @@ services:
         protocol: tcp
         mode: ingress
     deploy:
-      replicas: 1
+      replicas: 3
       update_config:
         parallelism: 2
         delay: 10s
@@ -39,7 +39,7 @@ services:
       - "5432:5432"
       - "8080:8080"
     deploy:
-      replicas: 1
+      replicas: 3
       update_config:
         parallelism: 2
         delay: 10s
