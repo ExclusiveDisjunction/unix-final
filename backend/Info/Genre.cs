@@ -12,25 +12,22 @@ public class Genre : IDbModify<Genre, OrganizationData, EditOrganizationRequest,
 
     public List<Book> Books { get; set; } = [];
 
-    public static Task<Genre> CreateFromAsync(OrganizationData source, Database database)
+    public static Genre CreateFrom(OrganizationData source, Database database)
     {
-        return new Task<Genre>(() => new Genre
+        return new Genre
         {
             Name = source.Name,
             Description = source.Description
-        });
+        };
     }
 
-    public Task UpdateFromAsync(EditOrganizationRequest source, Database database)
+    public void UpdateFrom(EditOrganizationRequest source, Database database)
     {
-        return new Task(() =>
-        {
-            if (source.Name is not null)
-                Name = source.Name;
+        if (source.Name is not null)
+            Name = source.Name;
 
-            if (source.Description is not null)
-                Description = source.Description;
-        });
+        if (source.Description is not null)
+            Description = source.Description;
     }
 
     public OrganizationData GenerateData()

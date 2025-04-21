@@ -14,9 +14,18 @@ public class Database : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         string password;
+        string? hostName;
         try 
         {   
-            var binary = File.ReadAllBytes("/etc/backend/db_pass");
+            var path = Environment.GetEnvironmentVariable("DB_PASSWORD");
+            hostName = Environment.GetEnvironmentVariable("DB_HOST");
+            if (path is null || hostName is null)
+            {
+                Console.Error.WriteLine("Unable to read DB_PASSWORD and/or DB_HOST");
+                throw new Exception("Unable to open the database password.");
+            }
+            
+            var binary = File.ReadAllBytes(path);
 
             password = System.Text.Encoding.UTF8.GetString(binary);
         }
@@ -25,13 +34,8 @@ public class Database : DbContext
             Console.Error.WriteLine($"Unable to find database key file, error: {e}.");
             throw new Exception("Unable to open the database password.");
         }
-
-        if (password is null)
-        {
-            throw new Exception("The database password is not presented.");
-        }
         
-        optionsBuilder.UseNpgsql($"Host=db;Username=postgres;Password={password}");
+        optionsBuilder.UseNpgsql($"Host={hostName};Username=postgres;Password={password}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

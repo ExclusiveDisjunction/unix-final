@@ -15,15 +15,15 @@ public class Book : IDbModify<Book, AddBookRequest, EditBookRequest, BookData>
     public Author? Author { get; set; }
     public Group? Group { get; set; }
     
-    public static async Task<Book> CreateFromAsync(AddBookRequest source, Database database)
+    public static Book CreateFrom(AddBookRequest source, Database database)
     {
         //May throw
-        var group = await database.Groups.SingleAsync(u => u.Name == source.GroupName);
-        var author = await database.Authors.SingleAsync(u => u.Id == source.Author);
+        var group = database.Groups.Single(u => u.Name == source.GroupName);
+        var author = database.Authors.Single(u => u.Id == source.Author);
         var genresQuery = from genre in database.Genres
             where source.Genres.Contains(genre.Name)
             select genre;
-        var genres = await genresQuery.ToListAsync();
+        var genres = genresQuery.ToList();
 
         return new Book
         {
@@ -38,7 +38,7 @@ public class Book : IDbModify<Book, AddBookRequest, EditBookRequest, BookData>
         };
     }
 
-    public async Task UpdateFromAsync(EditBookRequest source, Database database)
+    public void UpdateFrom(EditBookRequest source, Database database)
     {
         if (source.Title is not null)
         {
@@ -48,7 +48,7 @@ public class Book : IDbModify<Book, AddBookRequest, EditBookRequest, BookData>
         if (source.Group is not null)
         {
             var targetGroup = source.Group;
-            var newGroup = await database.Groups.SingleAsync(g => g.Name == targetGroup);
+            var newGroup = database.Groups.Single(g => g.Name == targetGroup);
             GroupId = newGroup.Id;
             Group = newGroup;
         }
@@ -70,7 +70,7 @@ public class Book : IDbModify<Book, AddBookRequest, EditBookRequest, BookData>
                 where asSet.Contains(genre.Name)
                 select genre;
 
-            var newGenres = await query.ToListAsync();
+            var newGenres = query.ToList();
             Genres = newGenres;
         }
     }

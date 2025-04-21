@@ -13,7 +13,11 @@ public static class UserManagement
     {
         try
         {
-            return await File.ReadAllBytesAsync("/etc/backend/jwt_key");
+            var path = Environment.GetEnvironmentVariable("JWT_TOKEN");
+            if (path is null)
+                return null;
+            
+            return await File.ReadAllBytesAsync(path);
         }
         catch
         {

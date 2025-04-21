@@ -71,7 +71,7 @@ public class AppTools
         try
         {
             if (request.Keep)
-                await target.UpdateFromAsync(request, database);
+                target.UpdateFrom(request, database);
             else
                 database.Remove(target);
 

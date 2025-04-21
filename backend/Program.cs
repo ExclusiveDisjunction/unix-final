@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace backend;
@@ -65,6 +66,12 @@ public static class Program
         {
             Console.Error.WriteLine(ex.Message);
             throw;
+        }
+
+        using (var scope = App.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<Database>();
+            db.Database.Migrate();
         }
 
         // Configure the HTTP request pipeline.
